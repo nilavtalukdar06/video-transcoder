@@ -7,17 +7,15 @@ import * as schema from "./schema";
 
 const { Pool } = pg;
 
-/**
- * Postgres access layer. Owns a single pg connection pool and the Drizzle
- * instance bound to it. Abstract + static: there is exactly one database.
- */
 export abstract class Database {
   private static pool: pg.Pool | null = null;
   private static client: NodePgDatabase<typeof schema> | null = null;
 
   static get db(): NodePgDatabase<typeof schema> {
     if (!this.client) {
-      throw new Error("Database not initialized. Call Database.connect() first.");
+      throw new Error(
+        "Database not initialized. Call Database.connect() first.",
+      );
     }
     return this.client;
   }
@@ -36,13 +34,11 @@ export abstract class Database {
       Logger.error({ err }, "Unexpected postgres pool error");
     });
 
-    // Verify connectivity eagerly so startup fails fast.
     await this.pool.query("SELECT 1");
     this.client = drizzle(this.pool, { schema });
     Logger.info("Postgres connected");
   }
 
-  /** Lightweight readiness probe used by the health check. */
   static async ping(): Promise<boolean> {
     if (!this.client) return false;
     await this.client.execute(sql`SELECT 1`);

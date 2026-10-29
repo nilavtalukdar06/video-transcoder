@@ -67,14 +67,14 @@ npm run build && npm start
 
 ## Endpoints
 
-| Method | Path                     | Auth | Description                     |
-| ------ | ------------------------ | ---- | ------------------------------- |
-| GET    | `/api/v1/health`         | —    | Liveness                        |
-| GET    | `/api/v1/health/ready`   | —    | Readiness (Postgres + Redis)    |
-| POST   | `/api/v1/auth/register`  | —    | Create an account               |
-| POST   | `/api/v1/auth/login`     | —    | Start a session (sets `sid`)    |
-| POST   | `/api/v1/auth/logout`    | ✓    | Destroy the session             |
-| GET    | `/api/v1/auth/me`        | ✓    | Current user profile            |
+| Method | Path                    | Auth | Description                  |
+| ------ | ----------------------- | ---- | ---------------------------- |
+| GET    | `/api/v1/health`        | —    | Liveness                     |
+| GET    | `/api/v1/health/ready`  | —    | Readiness (Postgres + Redis) |
+| POST   | `/api/v1/auth/register` | —    | Create an account            |
+| POST   | `/api/v1/auth/login`    | —    | Start a session (sets `sid`) |
+| POST   | `/api/v1/auth/logout`   | ✓    | Destroy the session          |
+| GET    | `/api/v1/auth/me`       | ✓    | Current user profile         |
 
 ### Quick smoke test
 
@@ -97,12 +97,12 @@ curl -s -b cookies.txt -X POST $BASE/auth/logout | jq
 
 ## Scripts
 
-| Script               | Purpose                              |
-| -------------------- | ------------------------------------ |
-| `npm run dev`        | Dev server with hot reload (tsx)     |
-| `npm run build`      | Bundle to `dist/` (tsup)             |
-| `npm start`          | Run the production bundle            |
-| `npm run typecheck`  | `tsc --noEmit`                       |
-| `npm run db:generate`| Generate Drizzle migration           |
-| `npm run db:migrate` | Apply migrations                     |
-| `npm run db:studio`  | Drizzle Studio                       |
+| Script                | Purpose                          |
+| --------------------- | -------------------------------- |
+| `npm run dev`         | Dev server with hot reload (tsx) |
+| `npm run build`       | Bundle to `dist/` (tsup)         |
+| `npm start`           | Run the production bundle        |
+| `npm run typecheck`   | `tsc --noEmit`                   |
+| `npm run db:generate` | Generate Drizzle migration       |
+| `npm run db:migrate`  | Apply migrations                 |
+| `npm run db:studio`   | Drizzle Studio                   |

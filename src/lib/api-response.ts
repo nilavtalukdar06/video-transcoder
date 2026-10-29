@@ -7,10 +7,6 @@ export interface ApiResponseBody<T> {
   requestId?: string;
 }
 
-/**
- * Uniform success envelope for every endpoint. Abstract + static: the class is
- * a namespace of response helpers, never instantiated.
- */
 export abstract class ApiResponse {
   static send<T>(
     res: Response,

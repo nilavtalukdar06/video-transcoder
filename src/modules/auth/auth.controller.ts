@@ -5,7 +5,6 @@ import { asyncHandler } from "../../lib/async-handler";
 import { AuthService } from "./auth.service";
 import type { LoginInput, RegisterInput } from "./auth.schema";
 
-/** Promisify express-session's callback APIs. */
 function regenerateSession(req: Request): Promise<void> {
   return new Promise((resolve, reject) => {
     req.session.regenerate((err) => (err ? reject(err) : resolve()));
@@ -24,10 +23,6 @@ function destroySession(req: Request): Promise<void> {
   });
 }
 
-/**
- * HTTP layer for authentication. Abstract + static: each handler is wrapped in
- * asyncHandler and delegates to AuthService.
- */
 export abstract class AuthController {
   static register = asyncHandler(async (req, res) => {
     const user = await AuthService.register(req.body as RegisterInput);
@@ -36,7 +31,7 @@ export abstract class AuthController {
 
   static login = asyncHandler(async (req, res) => {
     const user = await AuthService.login(req.body as LoginInput);
-    // Regenerate to prevent session fixation, then persist the identity.
+
     await regenerateSession(req);
     req.session.userId = user.id;
     await saveSession(req);

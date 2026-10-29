@@ -4,15 +4,10 @@ import type { User } from "../../db/schema";
 import { AuthRepository } from "./auth.repository";
 import type { LoginInput, RegisterInput } from "./auth.schema";
 
-/** A user object safe to return to clients (no password hash). */
 export type SafeUser = Omit<User, "passwordHash">;
 
 const BCRYPT_ROUNDS = 12;
 
-/**
- * Business logic for authentication. Abstract + static: orchestrates the
- * repository and password hashing; throws ApiError for client-facing failures.
- */
 export abstract class AuthService {
   private static toSafeUser(user: User): SafeUser {
     const { passwordHash: _passwordHash, ...safe } = user;
@@ -36,7 +31,7 @@ export abstract class AuthService {
 
   static async login(input: LoginInput): Promise<SafeUser> {
     const user = await AuthRepository.findByEmail(input.email);
-    // Compare even when the user is missing to blunt timing/enumeration attacks.
+
     const hash = user?.passwordHash ?? "$2a$12$invalidinvalidinvalidinvalidinv";
     const valid = await bcrypt.compare(input.password, hash);
 

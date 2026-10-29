@@ -4,10 +4,6 @@ import { Env } from "../config/env";
 import { ApiError } from "../lib/api-error";
 import { RedisClient } from "../redis";
 
-/**
- * Redis-backed rate limiting via rate-limiter-flexible. Counters are atomic and
- * shared across every app instance pointing at the same Redis.
- */
 export abstract class RateLimiter {
   private static limiter: RateLimiterRedis | null = null;
 
@@ -23,10 +19,6 @@ export abstract class RateLimiter {
     return this.limiter;
   }
 
-  /**
-   * Build a middleware. `points` optionally overrides the default budget for
-   * stricter endpoints (e.g. auth) by using a dedicated keyspace.
-   */
   static middleware(options?: {
     points?: number;
     duration?: number;
@@ -68,7 +60,7 @@ export abstract class RateLimiter {
             );
             return;
           }
-          // A genuine Redis failure — surface as internal, don't fail open.
+
           next(ApiError.internal("Rate limiter unavailable", rejection));
         });
     };

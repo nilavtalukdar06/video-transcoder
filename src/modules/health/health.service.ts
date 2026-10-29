@@ -17,10 +17,6 @@ export interface HealthReport {
   };
 }
 
-/**
- * Health/readiness checks. Abstract + static: probes each dependency in
- * parallel and reports per-dependency latency and status.
- */
 export abstract class HealthService {
   private static async probe(
     fn: () => Promise<boolean>,

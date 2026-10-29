@@ -5,10 +5,6 @@ import { Validate } from "../../middlewares/validate";
 import { AuthController } from "./auth.controller";
 import { loginSchema, registerSchema } from "./auth.schema";
 
-/**
- * Auth routes. Abstract + static: exposes a configured Router. Register/login
- * get a stricter, dedicated rate-limit budget to blunt brute-force attempts.
- */
 export abstract class AuthRoutes {
   static router(): Router {
     const router = Router();

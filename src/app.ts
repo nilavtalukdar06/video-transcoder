@@ -14,21 +14,14 @@ import { RequestId } from "./middlewares/request-id";
 import { RedisClient } from "./redis";
 import { ApiRoutes } from "./routes";
 
-/**
- * Builds the fully configured Express application. Abstract + static: there is
- * exactly one app; `create()` returns it ready to be handed to an http server.
- */
 export abstract class App {
   static create(): Express {
     const app = express();
 
-    // Behind a load balancer / reverse proxy: trust X-Forwarded-* so secure
-    // cookies and req.ip work correctly.
     app.set("trust proxy", 1);
     app.set("sessionCookieName", Env.SESSION_COOKIE_NAME);
     app.disable("x-powered-by");
 
-    // --- Security & payload middleware ---
     app.use(helmet());
     app.use(
       cors({
@@ -41,7 +34,6 @@ export abstract class App {
     app.use(express.urlencoded({ extended: true, limit: "1mb" }));
     app.use(cookieParser());
 
-    // --- Observability ---
     app.use(RequestId.handler());
     app.use(
       pinoHttp({
@@ -55,7 +47,6 @@ export abstract class App {
       }),
     );
 
-    // --- Session (Redis-backed) ---
     app.use(
       session({
         name: Env.SESSION_COOKIE_NAME,
@@ -77,13 +68,10 @@ export abstract class App {
       }),
     );
 
-    // --- Global rate limiter ---
     app.use(RateLimiter.middleware());
 
-    // --- Routes ---
     app.use("/api/v1", ApiRoutes.router());
 
-    // --- Terminal handlers ---
     app.use(ErrorHandler.notFound);
     app.use(ErrorHandler.handle);
 

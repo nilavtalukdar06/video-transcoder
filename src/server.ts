@@ -7,16 +7,11 @@ import { RedisClient } from "./redis";
 
 const SHUTDOWN_TIMEOUT_MS = 10_000;
 
-/**
- * Process bootstrap and lifecycle. Abstract + static: wires dependencies,
- * starts the HTTP server, and tears everything down gracefully on signals.
- */
 abstract class Server {
   private static httpServer: ReturnType<typeof createServer> | null = null;
   private static shuttingDown = false;
 
   static async start(): Promise<void> {
-    // Fail fast on bad configuration before touching any dependency.
     Env.validate();
 
     await Database.connect();
@@ -61,7 +56,6 @@ abstract class Server {
     if (this.shuttingDown) return;
     this.shuttingDown = true;
 
-    // Hard safety net: if graceful teardown stalls, force exit.
     const forceTimer = setTimeout(() => {
       Logger.error("Graceful shutdown timed out, forcing exit");
       process.exit(1);

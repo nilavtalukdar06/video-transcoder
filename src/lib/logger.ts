@@ -1,10 +1,6 @@
 import { pino, type Logger as PinoLogger } from "pino";
 import { Env } from "../config/env";
 
-/**
- * Application logger. Abstract + static wrapper around a single pino instance.
- * Pretty, human-readable output in development; structured JSON in production.
- */
 export abstract class Logger {
   private static instance: PinoLogger | null = null;
 

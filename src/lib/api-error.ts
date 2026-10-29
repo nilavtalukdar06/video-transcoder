@@ -1,8 +1,3 @@
-/**
- * Operational API error. Carries an HTTP status code and optional structured
- * details. Static factories cover the common cases so call sites read cleanly:
- *   throw ApiError.notFound("User not found");
- */
 export class ApiError extends Error {
   readonly statusCode: number;
   readonly isOperational: boolean;
@@ -45,7 +40,10 @@ export class ApiError extends Error {
     return new ApiError(429, message, { details });
   }
 
-  static internal(message = "Internal server error", cause?: unknown): ApiError {
+  static internal(
+    message = "Internal server error",
+    cause?: unknown,
+  ): ApiError {
     return new ApiError(500, message, { isOperational: false, cause });
   }
 }
