@@ -21,6 +21,11 @@ const env = createEnv({
 
     RATE_LIMIT_POINTS: z.coerce.number().int().positive().default(100),
     RATE_LIMIT_DURATION: z.coerce.number().int().positive().default(60),
+
+    AWS_ACCESS_KEY: z.string().min(1, "AWS_ACCESS_KEY is required"),
+    AWS_SECRET_KEY: z.string().min(1, "AWS_SECRET_KEY is required"),
+    AWS_REGION: z.string().min(1, "AWS_REGION is required"),
+    AWS_S3_BUCKET: z.string().min(1, "AWS_S3_BUCKET is required"),
   },
   runtimeEnv: process.env,
 
@@ -80,6 +85,22 @@ export abstract class Env {
 
   static get RATE_LIMIT_DURATION(): number {
     return env.RATE_LIMIT_DURATION;
+  }
+
+  static get AWS_ACCESS_KEY(): string {
+    return env.AWS_ACCESS_KEY;
+  }
+
+  static get AWS_SECRET_KEY(): string {
+    return env.AWS_SECRET_KEY;
+  }
+
+  static get AWS_REGION(): string {
+    return env.AWS_REGION;
+  }
+
+  static get AWS_S3_BUCKET(): string {
+    return env.AWS_S3_BUCKET;
   }
 
   static validate(): void {
