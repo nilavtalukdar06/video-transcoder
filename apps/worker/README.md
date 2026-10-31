@@ -33,14 +33,15 @@ stops the consumer and accepting connections, closes Postgres, and force-exits a
 
 ## Transcoding
 
-The SQS consumer long-polls `SQS_URL` for **S3 event notifications** (`ObjectCreated:*`) from the
-original bucket. For each uploaded object it starts the transcoder as a Fargate task
+The SQS consumer long-polls `SQS_URL` for S3 object-created events from the original bucket,
+either delivered by an **EventBridge** rule (`detail-type: "Object Created"`) or as classic **S3
+event notifications** (`ObjectCreated:*`). For each uploaded object it starts the transcoder as a Fargate task
 (`ecs:RunTask`) with `SOURCE_KEY=<object key>` as a container environment override, then deletes
 the message.
 
 - If `RunTask` fails, the message is left on the queue and retried after the visibility timeout
   (configure a dead-letter queue to cap retries).
-- Messages that are not `ObjectCreated` events (e.g. `s3:TestEvent`), have an unparseable body, or
+- Messages that are not object-created events (e.g. `Object Deleted`, `s3:TestEvent`), have an unparseable body, or
   come from a bucket other than `AWS_S3_BUCKET` start nothing and are deleted.
 - The configured credentials need `ecs:RunTask` on the task definition and `iam:PassRole` for the
   task's execution and task roles.

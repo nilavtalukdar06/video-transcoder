@@ -91,6 +91,13 @@ export abstract class QueueConsumer {
       "Received SQS event",
     );
 
+    if (objects.length === 0) {
+      Logger.warn(
+        { messageId: message.MessageId, body: message.Body },
+        "SQS event contained no created objects",
+      );
+    }
+
     for (const { bucket, key } of objects) {
       if (bucket !== Env.AWS_S3_BUCKET) {
         Logger.warn({ bucket, key }, "Ignoring object from unexpected bucket");
