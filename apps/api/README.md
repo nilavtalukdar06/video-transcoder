@@ -68,16 +68,26 @@ pnpm dev                  # tsx watch (hot reload)
 pnpm build && pnpm start
 ```
 
+## API docs
+
+Interactive Swagger UI is served at **`/docs`** (e.g. `http://localhost:3000/docs`),
+backed by the OpenAPI 3.0 spec in [`openapi.yaml`](./openapi.yaml). The raw spec
+is also available as JSON at `/docs/openapi.json`.
+
+> The spec must be kept in sync with the routes/schemas by hand — see the root
+> [AGENTS.md](../../AGENTS.md) for the rule that governs this.
+
 ## Endpoints
 
-| Method | Path                    | Auth | Description                  |
-| ------ | ----------------------- | ---- | ---------------------------- |
-| GET    | `/api/v1/health`        | —    | Liveness                     |
-| GET    | `/api/v1/health/ready`  | —    | Readiness (Postgres + Redis) |
-| POST   | `/api/v1/auth/register` | —    | Create an account            |
-| POST   | `/api/v1/auth/login`    | —    | Start a session (sets `sid`) |
-| POST   | `/api/v1/auth/logout`   | ✓    | Destroy the session          |
-| GET    | `/api/v1/auth/me`       | ✓    | Current user profile         |
+| Method | Path                        | Auth | Description                   |
+| ------ | --------------------------- | ---- | ------------------------------ |
+| GET    | `/api/v1/health`            | —    | Liveness                       |
+| GET    | `/api/v1/health/ready`      | —    | Readiness (Postgres + Redis)   |
+| POST   | `/api/v1/auth/register`     | —    | Create an account              |
+| POST   | `/api/v1/auth/login`        | —    | Start a session (sets `sid`)   |
+| POST   | `/api/v1/auth/logout`       | ✓    | Destroy the session            |
+| GET    | `/api/v1/auth/me`           | ✓    | Current user profile           |
+| POST   | `/api/v1/uploads/video/presign` | ✓ | Presigned S3 upload for a video |
 
 ### Quick smoke test
 

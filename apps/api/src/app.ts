@@ -7,6 +7,7 @@ import session from "express-session";
 import helmet from "helmet";
 import { pinoHttp } from "pino-http";
 import { Env } from "./config/env";
+import { DocsRoutes } from "./docs/docs.routes";
 import { Logger } from "./lib/logger";
 import { ErrorHandler } from "./middlewares/error-handler";
 import { RateLimiter } from "./middlewares/rate-limiter";
@@ -67,6 +68,8 @@ export abstract class App {
         },
       }),
     );
+
+    app.use("/docs", DocsRoutes.router());
 
     app.use(RateLimiter.middleware());
 
