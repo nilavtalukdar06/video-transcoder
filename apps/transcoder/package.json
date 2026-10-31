@@ -1,0 +1,29 @@
+{
+  "name": "@video-transcoder/transcoder",
+  "version": "1.0.0",
+  "description": "TypeScript (ESM) Node.js transcoder service that runs ffmpeg",
+  "type": "module",
+  "main": "dist/index.js",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsup",
+    "start": "node dist/index.js",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "typescript",
+    "esm",
+    "ffmpeg",
+    "transcoder"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^22.10.5",
+    "tsup": "^8.3.5",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  }
+}
