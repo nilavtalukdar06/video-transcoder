@@ -4,7 +4,8 @@ pnpm + Turborepo monorepo.
 
 ```
 apps/
-  api/   Express + TypeScript API (see apps/api/README.md)
+  api/    Express + TypeScript API (see apps/api/README.md)
+  worker/ Background worker (see apps/worker/README.md)
 ```
 
 ## Getting started
