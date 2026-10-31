@@ -6,6 +6,8 @@ import {
 } from "@aws-sdk/client-sqs";
 import { Env } from "../config/env";
 import { Logger } from "./logger";
+import { S3Event, type S3ObjectRef } from "./s3-event";
+import { TranscoderTask } from "./transcoder-task";
 
 const WAIT_TIME_SECONDS = 20;
 const MAX_MESSAGES = 10;
@@ -45,6 +47,7 @@ export abstract class QueueConsumer {
     await this.loop;
     this.client?.destroy();
     this.client = null;
+    TranscoderTask.destroy();
     Logger.info("SQS consumer stopped");
   }
 
@@ -63,7 +66,14 @@ export abstract class QueueConsumer {
         );
 
         for (const message of Messages ?? []) {
-          await this.handle(message);
+          try {
+            await this.handle(message);
+          } catch (err) {
+            Logger.error(
+              { err, messageId: message.MessageId },
+              "Failed to process SQS message, leaving it on the queue to retry",
+            );
+          }
         }
       } catch (err) {
         if (!this.running) break;
@@ -74,7 +84,15 @@ export abstract class QueueConsumer {
   }
 
   private static async handle(message: Message): Promise<void> {
-    console.log("Received SQS message:", message.Body);
+    const objects = this.parseObjects(message);
+
+    for (const { bucket, key } of objects) {
+      if (bucket !== Env.AWS_S3_BUCKET) {
+        Logger.warn({ bucket, key }, "Ignoring object from unexpected bucket");
+        continue;
+      }
+      await TranscoderTask.run(key);
+    }
 
     await this.getClient().send(
       new DeleteMessageCommand({
@@ -82,5 +100,17 @@ export abstract class QueueConsumer {
         ReceiptHandle: message.ReceiptHandle,
       }),
     );
+  }
+
+  private static parseObjects(message: Message): S3ObjectRef[] {
+    try {
+      return S3Event.parseCreatedObjects(message.Body ?? "");
+    } catch (err) {
+      Logger.warn(
+        { err, messageId: message.MessageId },
+        "Discarding SQS message with an unparseable body",
+      );
+      return [];
+    }
   }
 }

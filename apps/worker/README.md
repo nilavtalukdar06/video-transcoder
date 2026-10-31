@@ -19,7 +19,7 @@ limiting or Swagger docs.
 src/
   config/env.ts        validated environment (Env)
   db/                  Postgres pool + Drizzle client (Database)
-  lib/                 Logger, ApiError, ApiResponse, asyncHandler, QueueConsumer (SQS)
+  lib/                 Logger, ApiError, ApiResponse, asyncHandler, QueueConsumer (SQS), S3Event, TranscoderTask (ECS)
   middlewares/         RequestId, ErrorHandler
   modules/health/      service / controller / routes
   routes/index.ts      mounts modules
@@ -28,9 +28,31 @@ src/
 ```
 
 `server.ts` validates env, connects Postgres, starts the HTTP server, then
-starts the SQS consumer (long-polls `SQS_URL`, `console.log`s each message body,
-then deletes it). On `SIGTERM`/`SIGINT` (or an uncaught exception/unhandled rejection) it
+starts the SQS consumer. On `SIGTERM`/`SIGINT` (or an uncaught exception/unhandled rejection) it
 stops the consumer and accepting connections, closes Postgres, and force-exits after 10s.
+
+## Transcoding
+
+The SQS consumer long-polls `SQS_URL` for **S3 event notifications** (`ObjectCreated:*`) from the
+original bucket. For each uploaded object it starts the transcoder as a Fargate task
+(`ecs:RunTask`) with `SOURCE_KEY=<object key>` as a container environment override, then deletes
+the message.
+
+- If `RunTask` fails, the message is left on the queue and retried after the visibility timeout
+  (configure a dead-letter queue to cap retries).
+- Messages that are not `ObjectCreated` events (e.g. `s3:TestEvent`), have an unparseable body, or
+  come from a bucket other than `AWS_S3_BUCKET` start nothing and are deleted.
+- The configured credentials need `ecs:RunTask` on the task definition and `iam:PassRole` for the
+  task's execution and task roles.
+
+| Variable               | Description                                                  |
+| ---------------------- | ------------------------------------------------------------ |
+| `ECS_CLUSTER`          | Cluster to run the task in                                   |
+| `ECS_TASK_DEFINITION`  | Transcoder task definition (family or family:revision)       |
+| `ECS_CONTAINER_NAME`   | Container name in the task definition (default `transcoder`) |
+| `ECS_SUBNETS`          | Comma-separated subnet ids                                   |
+| `ECS_SECURITY_GROUPS`  | Comma-separated security group ids                           |
+| `ECS_ASSIGN_PUBLIC_IP` | `ENABLED` (default) or `DISABLED`                            |
 
 ## Getting started
 
