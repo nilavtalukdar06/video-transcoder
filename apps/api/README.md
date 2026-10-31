@@ -87,7 +87,7 @@ is also available as JSON at `/docs/openapi.json`.
 | POST   | `/api/v1/auth/login`        | —    | Start a session (sets `sid`)   |
 | POST   | `/api/v1/auth/logout`       | ✓    | Destroy the session            |
 | GET    | `/api/v1/auth/me`           | ✓    | Current user profile           |
-| POST   | `/api/v1/uploads/video/presign` | ✓ | Presigned S3 upload for a video |
+| POST   | `/api/v1/uploads/video/presign` | ✓ | Presigned S3 `PUT` URL for a video |
 
 ### Quick smoke test
 

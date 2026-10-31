@@ -201,8 +201,10 @@ paths:
       tags: [Uploads]
       summary: Create a presigned S3 upload for a video file
       description: >
-        Returns a presigned POST (URL + form fields) that the client posts
-        the raw video file to directly. Limited to `video/mp4`, up to 100MB.
+        Returns a presigned `PUT` URL (generated from a `PutObjectCommand`)
+        that the client uploads the raw video file to directly. The request
+        must send the returned `headers` (`Content-Type: video/mp4`) or S3
+        rejects it with a signature mismatch.
       security:
         - cookieAuth: []
       responses:
@@ -334,23 +336,26 @@ components:
         url:
           type: string
           format: uri
-        fields:
+        method:
+          type: string
+          enum: [PUT]
+        headers:
           type: object
+          description: Headers the upload request must send
           additionalProperties:
             type: string
+          example:
+            Content-Type: video/mp4
         key:
           type: string
-        maxSizeBytes:
-          type: integer
-          example: 104857600
         contentType:
           type: string
           example: video/mp4
         expiresIn:
           type: integer
-          description: Seconds until the presigned POST expires
+          description: Seconds until the presigned URL expires
           example: 300
-      required: [url, fields, key, maxSizeBytes, contentType, expiresIn]
+      required: [url, method, headers, key, contentType, expiresIn]
 
     DependencyStatus:
       type: object
