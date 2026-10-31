@@ -1,13 +1,14 @@
 FROM node:22-slim AS build
-WORKDIR /repo
-RUN corepack enable
+WORKDIR /app
+RUN corepack enable && corepack prepare pnpm@11.18.0 --activate
 
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-COPY apps/transcoder/package.json apps/transcoder/
-RUN pnpm install --frozen-lockfile --filter @video-transcoder/transcoder...
+COPY package.json ./
+# Standalone workspace so pnpm allows esbuild's build script (mirrors the root pnpm-workspace.yaml)
+RUN printf 'allowBuilds:\n  esbuild: true\n' > pnpm-workspace.yaml \
+    && pnpm install
 
-COPY apps/transcoder apps/transcoder
-RUN pnpm --filter @video-transcoder/transcoder build
+COPY . .
+RUN pnpm build
 
 FROM ubuntu:24.04
 
@@ -18,8 +19,8 @@ RUN apt-get update \
 COPY --from=build /usr/local/bin/node /usr/local/bin/node
 
 WORKDIR /app
-COPY --from=build /repo/apps/transcoder/dist ./dist
-COPY apps/transcoder/.env ./.env
+COPY --from=build /app/dist ./dist
+COPY .env ./.env
 
 USER ubuntu
 

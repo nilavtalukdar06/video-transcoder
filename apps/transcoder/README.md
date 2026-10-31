@@ -49,9 +49,12 @@ Running locally needs `ffmpeg` on your `PATH` (`cp .env.example .env` first).
 ## Docker
 
 The image is based on `ubuntu:24.04` with `ffmpeg` installed. The tsup bundle inlines all dependencies
-(`noExternal`), so the image ships only `dist/` and the `node` binary. Build from the **repo root**:
+(`noExternal`), so the image ships only `dist/` and the `node` binary. The build context is this
+directory (it has no workspace dependencies), so build from `apps/transcoder`:
 
 ```bash
-docker build -f apps/transcoder/Dockerfile -t transcoder .
-docker run --rm --env-file apps/transcoder/.env transcoder
+docker build -t video-transcoder-image .
+docker run --rm video-transcoder-image
 ```
+
+`.env` is copied into the image, so it must exist before building (`cp .env.example .env`).
