@@ -86,6 +86,11 @@ export abstract class QueueConsumer {
   private static async handle(message: Message): Promise<void> {
     const objects = this.parseObjects(message);
 
+    Logger.info(
+      { messageId: message.MessageId, objects },
+      "Received SQS event",
+    );
+
     for (const { bucket, key } of objects) {
       if (bucket !== Env.AWS_S3_BUCKET) {
         Logger.warn({ bucket, key }, "Ignoring object from unexpected bucket");
