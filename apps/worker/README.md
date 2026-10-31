@@ -19,7 +19,7 @@ limiting or Swagger docs.
 src/
   config/env.ts        validated environment (Env)
   db/                  Postgres pool + Drizzle client (Database)
-  lib/                 Logger, ApiError, ApiResponse, asyncHandler
+  lib/                 Logger, ApiError, ApiResponse, asyncHandler, QueueConsumer (SQS)
   middlewares/         RequestId, ErrorHandler
   modules/health/      service / controller / routes
   routes/index.ts      mounts modules
@@ -27,9 +27,10 @@ src/
   server.ts            bootstrap + graceful shutdown
 ```
 
-`server.ts` validates env, connects Postgres, then starts the HTTP
-server. On `SIGTERM`/`SIGINT` (or an uncaught exception/unhandled rejection) it
-stops accepting connections, closes Postgres, and force-exits after 10s.
+`server.ts` validates env, connects Postgres, starts the HTTP server, then
+starts the SQS consumer (long-polls `SQS_URL`, `console.log`s each message body,
+then deletes it). On `SIGTERM`/`SIGINT` (or an uncaught exception/unhandled rejection) it
+stops the consumer and accepting connections, closes Postgres, and force-exits after 10s.
 
 ## Getting started
 

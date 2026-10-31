@@ -3,6 +3,7 @@ import { App } from "./app";
 import { Env } from "./config/env";
 import { Database } from "./db";
 import { Logger } from "./lib/logger";
+import { QueueConsumer } from "./lib/queue-consumer";
 
 const SHUTDOWN_TIMEOUT_MS = 10_000;
 
@@ -27,7 +28,7 @@ abstract class Server {
         resolve();
       });
     });
-
+    QueueConsumer.start();
     this.registerSignalHandlers();
   }
 
@@ -61,6 +62,8 @@ abstract class Server {
     forceTimer.unref();
 
     try {
+      await QueueConsumer.stop();
+
       if (this.httpServer) {
         await new Promise<void>((resolve, reject) => {
           this.httpServer!.close((err) => (err ? reject(err) : resolve()));

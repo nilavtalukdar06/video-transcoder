@@ -13,6 +13,7 @@ const env = createEnv({
     AWS_SECRET_KEY: z.string().min(1, "AWS_SECRET_KEY is required"),
     AWS_REGION: z.string().min(1, "AWS_REGION is required"),
     AWS_S3_BUCKET: z.string().min(1, "AWS_S3_BUCKET is required"),
+    SQS_URL: z.string().url("SQS_URL must be a valid URL"),
   },
   runtimeEnv: process.env,
 
@@ -60,6 +61,10 @@ export abstract class Env {
 
   static get AWS_S3_BUCKET(): string {
     return env.AWS_S3_BUCKET;
+  }
+
+  static get SQS_URL(): string {
+    return env.SQS_URL;
   }
 
   static validate(): void {
