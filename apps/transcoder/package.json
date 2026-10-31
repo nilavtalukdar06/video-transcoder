@@ -25,5 +25,12 @@
     "tsup": "^8.3.5",
     "tsx": "^4.19.2",
     "typescript": "^5.7.2"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.1160.0",
+    "@aws-sdk/lib-storage": "^3.1161.0",
+    "@t3-oss/env-core": "^0.13.11",
+    "dotenv": "^16.6.1",
+    "zod": "^3.25.76"
   }
 }

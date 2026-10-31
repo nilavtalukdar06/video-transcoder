@@ -12,4 +12,8 @@ export default defineConfig({
   dts: false,
   splitting: false,
   shims: false,
+  noExternal: [/.*/],
+  banner: {
+    js: 'import { createRequire } from "node:module"; const require = createRequire(import.meta.url);',
+  },
 });

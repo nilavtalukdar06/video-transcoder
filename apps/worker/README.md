@@ -45,9 +45,9 @@ pnpm build && pnpm start
 
 ## Endpoints
 
-| Method | Path            | Description                  |
-| ------ | --------------- | ---------------------------- |
-| GET    | `/health`       | Liveness                     |
+| Method | Path            | Description          |
+| ------ | --------------- | -------------------- |
+| GET    | `/health`       | Liveness             |
 | GET    | `/health/ready` | Readiness (Postgres) |
 
 Default port is `4000` (the API uses `3000`).

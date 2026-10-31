@@ -79,15 +79,15 @@ is also available as JSON at `/docs/openapi.json`.
 
 ## Endpoints
 
-| Method | Path                        | Auth | Description                   |
-| ------ | --------------------------- | ---- | ------------------------------ |
-| GET    | `/api/v1/health`            | —    | Liveness                       |
-| GET    | `/api/v1/health/ready`      | —    | Readiness (Postgres + Redis)   |
-| POST   | `/api/v1/auth/register`     | —    | Create an account              |
-| POST   | `/api/v1/auth/login`        | —    | Start a session (sets `sid`)   |
-| POST   | `/api/v1/auth/logout`       | ✓    | Destroy the session            |
-| GET    | `/api/v1/auth/me`           | ✓    | Current user profile           |
-| POST   | `/api/v1/uploads/video/presign` | ✓ | Presigned S3 `PUT` URL for a video |
+| Method | Path                            | Auth | Description                        |
+| ------ | ------------------------------- | ---- | ---------------------------------- |
+| GET    | `/api/v1/health`                | —    | Liveness                           |
+| GET    | `/api/v1/health/ready`          | —    | Readiness (Postgres + Redis)       |
+| POST   | `/api/v1/auth/register`         | —    | Create an account                  |
+| POST   | `/api/v1/auth/login`            | —    | Start a session (sets `sid`)       |
+| POST   | `/api/v1/auth/logout`           | ✓    | Destroy the session                |
+| GET    | `/api/v1/auth/me`               | ✓    | Current user profile               |
+| POST   | `/api/v1/uploads/video/presign` | ✓    | Presigned S3 `PUT` URL for a video |
 
 ### Quick smoke test
 
@@ -111,7 +111,7 @@ curl -s -b cookies.txt -X POST $BASE/auth/logout | jq
 ## Scripts
 
 | Script             | Purpose                          |
-| ------------------ | --------------------------------- |
+| ------------------ | -------------------------------- |
 | `pnpm dev`         | Dev server with hot reload (tsx) |
 | `pnpm build`       | Bundle to `dist/` (tsup)         |
 | `pnpm start`       | Run the production bundle        |

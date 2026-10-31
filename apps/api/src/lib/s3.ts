@@ -8,7 +8,6 @@ export abstract class S3 {
     if (!this.client) {
       this.client = new S3Client({
         region: Env.AWS_REGION,
-        // Keep checksum params out of presigned PUT URLs so browsers can upload with a plain PUT.
         requestChecksumCalculation: "WHEN_REQUIRED",
         credentials: {
           accessKeyId: Env.AWS_ACCESS_KEY,

@@ -6,7 +6,7 @@ pnpm + Turborepo monorepo.
 apps/
   api/    Express + TypeScript API (see apps/api/README.md)
   worker/ Background worker (see apps/worker/README.md)
-  transcoder/ Node + ffmpeg transcoder, Ubuntu image (see apps/transcoder/README.md)
+  transcoder/ ECS job: ffmpeg renditions S3 -> S3 (see apps/transcoder/README.md)
 ```
 
 ## Getting started
@@ -21,15 +21,15 @@ pnpm dev                     # runs `dev` in every app, via turbo
 
 Run from the repo root, fanned out to all apps via Turborepo:
 
-| Script              | Purpose                    |
-| -------------------- | --------------------------- |
-| `pnpm dev`           | Start all apps in dev mode  |
-| `pnpm build`         | Build all apps              |
-| `pnpm start`         | Start all apps (production) |
-| `pnpm typecheck`     | Type-check all apps         |
-| `pnpm db:generate`   | Generate Drizzle migrations |
-| `pnpm db:migrate`    | Apply Drizzle migrations    |
-| `pnpm db:studio`     | Open Drizzle Studio         |
+| Script             | Purpose                     |
+| ------------------ | --------------------------- |
+| `pnpm dev`         | Start all apps in dev mode  |
+| `pnpm build`       | Build all apps              |
+| `pnpm start`       | Start all apps (production) |
+| `pnpm typecheck`   | Type-check all apps         |
+| `pnpm db:generate` | Generate Drizzle migrations |
+| `pnpm db:migrate`  | Apply Drizzle migrations    |
+| `pnpm db:studio`   | Open Drizzle Studio         |
 
 Scope a command to a single app with turbo's filter flag, e.g.
 `pnpm turbo run dev --filter=@video-transcoder/api`.
