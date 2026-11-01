@@ -212,16 +212,16 @@ sequenceDiagram
     end
     Worker->>Worker: S3Event.parseCreatedObjects (handles both notification shapes)
     Worker->>PG: UPDATE videos SET status=uploaded WHERE source_key=... AND status=uploading
-    Worker->>PG: BEGIN; SELECT videos ... FOR UPDATE
+    Worker->>PG: BEGIN, SELECT videos ... FOR UPDATE
     Worker->>PG: INSERT transcoding_jobs (status=pending, attempt=latest+1)
-    Worker->>PG: UPDATE videos SET status=queued; COMMIT
+    Worker->>PG: UPDATE videos SET status=queued, COMMIT
     Worker->>ECS: RunTask(cluster, taskDefinition, env=[SOURCE_KEY, VIDEO_ID, JOB_ID])
     ECS-->>Worker: taskArn
     Worker->>PG: UPDATE transcoding_jobs SET ecs_task_arn
     Worker->>SQS: DeleteMessage
 
     ECS->>Transcoder: start Fargate container (reads SOURCE_KEY/VIDEO_ID/JOB_ID from env)
-    Transcoder->>PG: BEGIN; UPDATE job=running, video=processing; COMMIT
+    Transcoder->>PG: BEGIN, UPDATE job=running, video=processing, COMMIT
     Transcoder->>PG: INSERT video_renditions (360p,480p,720p,1080p = pending), ON CONFLICT reset
     Transcoder->>S3: GetObject -> stream to local tmp dir
     Transcoder->>Kafka: produce "Downloading s3://..."
@@ -235,7 +235,7 @@ sequenceDiagram
     end
 
     Transcoder->>S3: DeleteObject (source cleanup)
-    Transcoder->>PG: BEGIN; UPDATE job=succeeded, video=completed; COMMIT
+    Transcoder->>PG: BEGIN, UPDATE job=succeeded, video=completed, COMMIT
     Transcoder->>Kafka: produce "Transcoding completed"
 
     Kafka->>LogsConsumer: eachBatch (manual offset resolution)
