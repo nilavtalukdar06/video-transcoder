@@ -17,5 +17,5 @@
     "forceConsistentCasingInFileNames": true,
     "noEmit": true
   },
-  "include": ["src", "tsup.config.ts"]
+  "include": ["src", "drizzle.config.ts", "tsup.config.ts"]
 }

@@ -1,4 +1,5 @@
 import { Env } from "./config/env";
+import { Database } from "./db";
 import { Transcoder } from "./transcoder";
 
 async function main(): Promise<void> {
@@ -10,7 +11,12 @@ async function main(): Promise<void> {
     throw new Error("SOURCE_KEY is not set");
   }
 
-  await Transcoder.run(sourceKey);
+  await Database.connect();
+  try {
+    await Transcoder.run(sourceKey);
+  } finally {
+    await Database.close();
+  }
   console.log("transcoding finished");
 }
 

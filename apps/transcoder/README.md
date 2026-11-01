@@ -24,6 +24,7 @@ Every rendition is produced regardless of the source resolution (smaller sources
 
 | Variable                            | Required | Description                                                          |
 | ----------------------------------- | -------- | -------------------------------------------------------------------- |
+| `DATABASE_URL`                      | yes      | Postgres connection string (must be reachable from the ECS task)     |
 | `AWS_REGION`                        | yes      | AWS region                                                           |
 | `AWS_S3_BUCKET`                     | yes      | Original bucket (download + delete)                                  |
 | `AWS_S3_TRANSFORMED_BUCKET`         | yes      | Transformed bucket, e.g. `video-transcoder-transformed`              |
@@ -35,6 +36,13 @@ Every rendition is produced regardless of the source resolution (smaller sources
 The task role needs `s3:GetObject` + `s3:DeleteObject` on the original bucket and `s3:PutObject` on the
 transformed bucket.
 
+## Database
+
+The transcoder connects to Postgres with Drizzle (`src/db`) before it starts and closes the pool when it
+finishes. `src/db/schema.ts` is a copy of [`apps/api/src/db/schema.ts`](../api/src/db/schema.ts): the API
+owns the schema and its migrations, so keep the files identical when the schema changes. It is copied
+rather than imported because the Docker build context is this directory only.
+
 ## Scripts
 
 | Script           | Purpose                   |
@@ -43,6 +51,7 @@ transformed bucket.
 | `pnpm build`     | Bundle to `dist/` (tsup)  |
 | `pnpm start`     | Run the production bundle |
 | `pnpm typecheck` | `tsc --noEmit`            |
+| `pnpm db:studio` | Drizzle Studio            |
 
 Running locally needs `ffmpeg` on your `PATH` (`cp .env.example .env` first).
 

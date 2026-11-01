@@ -7,6 +7,7 @@ const env = createEnv({
     NODE_ENV: z
       .enum(["development", "test", "production"])
       .default("development"),
+    DATABASE_URL: z.string().min(1, "DATABASE_URL is required"),
     AWS_REGION: z.string().min(1, "AWS_REGION is required"),
     AWS_S3_BUCKET: z.string().min(1, "AWS_S3_BUCKET is required"),
     AWS_S3_TRANSFORMED_BUCKET: z
@@ -30,6 +31,10 @@ const env = createEnv({
 export abstract class Env {
   static get NODE_ENV(): (typeof env)["NODE_ENV"] {
     return env.NODE_ENV;
+  }
+
+  static get DATABASE_URL(): string {
+    return env.DATABASE_URL;
   }
 
   static get AWS_REGION(): string {

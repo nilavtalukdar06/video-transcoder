@@ -68,6 +68,23 @@ pnpm dev                  # tsx watch (hot reload)
 pnpm build && pnpm start
 ```
 
+## Database schema
+
+`src/db/schema.ts` defines `users` plus the video-processing tables. This app owns the schema and all
+migrations; `apps/worker` and `apps/transcoder` keep a mirrored copy of the file, so update those too
+when it changes.
+
+| Table              | Purpose                                                                                                  |
+| ------------------ | -------------------------------------------------------------------------------------------------------- |
+| `videos`           | One row per uploaded video (`source_bucket`/`source_key`, owner) with overall `video_status`             |
+| `transcoding_jobs` | One row per transcoder (ECS) run of a video: `job_status`, `attempt`, `ecs_task_arn`, start/finish times |
+| `video_renditions` | One row per output (360p, 480p, ...) with `rendition_status`, output bucket/key and size                 |
+
+`video_status`: `uploaded` → `queued` → `processing` → `completed` / `failed`.
+`job_status`: `pending` → `running` → `succeeded` / `failed`.
+`rendition_status`: `pending` → `processing` → `completed` / `failed`.
+Deleting a user cascades to their videos, jobs and renditions.
+
 ## API docs
 
 Interactive Swagger UI is served at **`/docs`** (e.g. `http://localhost:3000/docs`),

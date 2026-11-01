@@ -9,7 +9,7 @@ limiting or Swagger docs.
 
 - **Runtime:** Node 20+, ESM, ES2022 · **Bundler:** tsup · **Dev runner:** tsx
 - **Web:** Express 4 + helmet, compression
-- **Data:** Postgres (`pg` + Drizzle, no schema yet)
+- **Data:** Postgres (`pg` + Drizzle; schema mirrored from `apps/api`, see [Database](#database))
 - **Logging:** pino / pino-http (with `X-Request-Id` request-id middleware)
 - **Config:** `@t3-oss/env-core` + zod, validated at startup
 
@@ -18,7 +18,7 @@ limiting or Swagger docs.
 ```
 src/
   config/env.ts        validated environment (Env)
-  db/                  Postgres pool + Drizzle client (Database)
+  db/                  Postgres pool + Drizzle client (Database) + schema (mirror of apps/api)
   lib/                 Logger, ApiError, ApiResponse, asyncHandler, QueueConsumer (SQS), S3Event, TranscoderTask (ECS)
   middlewares/         RequestId, ErrorHandler
   modules/health/      service / controller / routes
@@ -55,6 +55,13 @@ the message.
 | `ECS_SECURITY_GROUPS`  | Comma-separated security group ids                           |
 | `ECS_ASSIGN_PUBLIC_IP` | `ENABLED` (default) or `DISABLED`                            |
 
+## Database
+
+`src/db/schema.ts` is a copy of [`apps/api/src/db/schema.ts`](../api/src/db/schema.ts). The API owns the
+schema **and its migrations** (`pnpm db:generate` / `pnpm db:migrate` in `apps/api`); the worker only
+reads and writes the tables. Keep the two files identical when the schema changes. `pnpm db:studio`
+opens Drizzle Studio against `DATABASE_URL`.
+
 ## Getting started
 
 ```bash
@@ -83,3 +90,4 @@ Default port is `4000` (the API uses `3000`).
 | `pnpm build`     | Bundle to `dist/` (tsup)         |
 | `pnpm start`     | Run the production bundle        |
 | `pnpm typecheck` | `tsc --noEmit`                   |
+| `pnpm db:studio` | Drizzle Studio                   |

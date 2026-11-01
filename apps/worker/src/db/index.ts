@@ -3,14 +3,15 @@ import { sql } from "drizzle-orm";
 import pg from "pg";
 import { Env } from "../config/env";
 import { Logger } from "../lib/logger";
+import * as schema from "./schema";
 
 const { Pool } = pg;
 
 export abstract class Database {
   private static pool: pg.Pool | null = null;
-  private static client: NodePgDatabase | null = null;
+  private static client: NodePgDatabase<typeof schema> | null = null;
 
-  static get db(): NodePgDatabase {
+  static get db(): NodePgDatabase<typeof schema> {
     if (!this.client) {
       throw new Error(
         "Database not initialized. Call Database.connect() first.",
@@ -34,7 +35,7 @@ export abstract class Database {
     });
 
     await this.pool.query("SELECT 1");
-    this.client = drizzle(this.pool);
+    this.client = drizzle(this.pool, { schema });
     Logger.info("Postgres connected");
   }
 
