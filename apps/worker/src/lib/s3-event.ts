@@ -1,13 +1,14 @@
 export interface S3ObjectRef {
   bucket: string;
   key: string;
+  size?: number;
 }
 
 interface S3NotificationRecord {
   eventName?: string;
   s3?: {
     bucket?: { name?: string };
-    object?: { key?: string };
+    object?: { key?: string; size?: number };
   };
 }
 
@@ -17,7 +18,7 @@ interface S3EventBody {
   "detail-type"?: string;
   detail?: {
     bucket?: { name?: string };
-    object?: { key?: string };
+    object?: { key?: string; size?: number };
   };
 }
 
@@ -38,7 +39,9 @@ export abstract class S3Event {
     const key = event.detail?.object?.key;
     if (!bucket || !key) return [];
 
-    return [{ bucket, key: this.decodeKey(key) }];
+    return [
+      { bucket, key: this.decodeKey(key), size: event.detail?.object?.size },
+    ];
   }
 
   private static fromNotification(event: S3EventBody): S3ObjectRef[] {
@@ -50,7 +53,11 @@ export abstract class S3Event {
       if (!bucket || !key) continue;
       if (!record.eventName?.startsWith("ObjectCreated")) continue;
 
-      refs.push({ bucket, key: this.decodeKey(key) });
+      refs.push({
+        bucket,
+        key: this.decodeKey(key),
+        size: record.s3?.object?.size,
+      });
     }
 
     return refs;

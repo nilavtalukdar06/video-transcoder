@@ -11,9 +11,15 @@ async function main(): Promise<void> {
     throw new Error("SOURCE_KEY is not set");
   }
 
+  const videoId = Env.VIDEO_ID;
+  const jobId = Env.JOB_ID;
+  if (!videoId || !jobId) {
+    throw new Error("VIDEO_ID and JOB_ID must be set");
+  }
+
   await Database.connect();
   try {
-    await Transcoder.run(sourceKey);
+    await Transcoder.run(sourceKey, { videoId, jobId });
   } finally {
     await Database.close();
   }

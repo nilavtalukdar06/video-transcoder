@@ -22,19 +22,28 @@ Every rendition is produced regardless of the source resolution (smaller sources
 
 ## Environment
 
-| Variable                            | Required | Description                                                          |
-| ----------------------------------- | -------- | -------------------------------------------------------------------- |
-| `DATABASE_URL`                      | yes      | Postgres connection string (must be reachable from the ECS task)     |
-| `AWS_REGION`                        | yes      | AWS region                                                           |
-| `AWS_S3_BUCKET`                     | yes      | Original bucket (download + delete)                                  |
-| `AWS_S3_TRANSFORMED_BUCKET`         | yes      | Transformed bucket, e.g. `video-transcoder-transformed`              |
-| `SOURCE_KEY`                        | yes\*    | Key of the video to transcode; set per task via a container override |
-| `AWS_ACCESS_KEY` / `AWS_SECRET_KEY` | no       | Local runs only. On ECS the task role is used                        |
+| Variable                            | Required | Description                                                                |
+| ----------------------------------- | -------- | -------------------------------------------------------------------------- |
+| `DATABASE_URL`                      | yes      | Postgres connection string (must be reachable from the ECS task)           |
+| `AWS_REGION`                        | yes      | AWS region                                                                 |
+| `AWS_S3_BUCKET`                     | yes      | Original bucket (download + delete)                                        |
+| `AWS_S3_TRANSFORMED_BUCKET`         | yes      | Transformed bucket, e.g. `video-transcoder-transformed`                    |
+| `SOURCE_KEY`                        | yes\*    | Key of the video to transcode; set per task via a container override       |
+| `VIDEO_ID` / `JOB_ID`               | yes\*    | UUIDs of the tracked `videos` / `transcoding_jobs` rows; set by the worker |
+| `AWS_ACCESS_KEY` / `AWS_SECRET_KEY` | no       | Local runs only. On ECS the task role is used                              |
 
-\* Not in `.env`: the worker provides `SOURCE_KEY` in the ECS task's runtime environment. It is optional in the env schema, but the task exits with an error if it is missing. For a local run, pass it inline, e.g. `SOURCE_KEY=uploads/<userId>/<id>.mp4 pnpm dev`.
+\* Not in `.env`: the worker provides `SOURCE_KEY`, `VIDEO_ID` and `JOB_ID` in the ECS task's runtime environment. It is optional in the env schema, but the task exits with an error if any is missing. For a local run, create a `videos` row and a `transcoding_jobs` row first and pass the values inline, e.g. `SOURCE_KEY=uploads/<userId>/<id>.mp4 VIDEO_ID=<uuid> JOB_ID=<uuid> pnpm dev`.
 
 The task role needs `s3:GetObject` + `s3:DeleteObject` on the original bucket and `s3:PutObject` on the
 transformed bucket.
+
+## Status tracking
+
+The task records its progress in Postgres: job `running` and video `processing` on start, every rendition
+`pending` → `processing` → `completed` (output key and size), then job `succeeded` and video `completed` once the
+original is deleted. If any step throws, the rendition in progress, the job and the video are marked `failed` with the
+error message before the process exits `1`. A task that is killed outright (OOM, `SIGKILL`) cannot record anything.
+See the full table in [`apps/api`](../api#status-tracking).
 
 ## Database
 

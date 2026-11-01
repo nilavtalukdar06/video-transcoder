@@ -8,6 +8,7 @@ import { Env } from "../config/env";
 import { Logger } from "./logger";
 import { S3Event, type S3ObjectRef } from "./s3-event";
 import { TranscoderTask } from "./transcoder-task";
+import { VideoTracker } from "./video-tracker";
 
 const WAIT_TIME_SECONDS = 20;
 const MAX_MESSAGES = 10;
@@ -98,12 +99,12 @@ export abstract class QueueConsumer {
       );
     }
 
-    for (const { bucket, key } of objects) {
+    for (const { bucket, key, size } of objects) {
       if (bucket !== Env.AWS_S3_BUCKET) {
         Logger.warn({ bucket, key }, "Ignoring object from unexpected bucket");
         continue;
       }
-      await TranscoderTask.run(key);
+      await this.process(key, size);
     }
 
     await this.getClient().send(
@@ -112,6 +113,22 @@ export abstract class QueueConsumer {
         ReceiptHandle: message.ReceiptHandle,
       }),
     );
+  }
+
+  private static async process(key: string, size?: number): Promise<void> {
+    const started = await VideoTracker.start(key, size);
+    if (!started) return;
+
+    try {
+      const taskArn = await TranscoderTask.run({
+        sourceKey: key,
+        ...started,
+      });
+      await VideoTracker.setTaskArn(started.jobId, taskArn);
+    } catch (err) {
+      await VideoTracker.fail(started, err);
+      throw err;
+    }
   }
 
   private static parseObjects(message: Message): S3ObjectRef[] {

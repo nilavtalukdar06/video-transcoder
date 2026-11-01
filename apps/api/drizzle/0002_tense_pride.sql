@@ -1,0 +1,1 @@
+ALTER TYPE "public"."video_status" ADD VALUE 'uploading' BEFORE 'uploaded';

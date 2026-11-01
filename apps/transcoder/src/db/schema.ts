@@ -1,3 +1,5 @@
+// Mirror of apps/api/src/db/schema.ts. The API owns the schema and its migrations;
+// keep this file identical to it whenever the schema changes.
 import {
   bigint,
   index,
@@ -27,8 +29,8 @@ export const users = pgTable("users", {
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
 
-/** Overall lifecycle of an uploaded video. */
 export const videoStatus = pgEnum("video_status", [
+  "uploading",
   "uploaded",
   "queued",
   "processing",
@@ -36,7 +38,6 @@ export const videoStatus = pgEnum("video_status", [
   "failed",
 ]);
 
-/** Lifecycle of a single transcoder (ECS) run for a video. */
 export const jobStatus = pgEnum("job_status", [
   "pending",
   "running",
@@ -44,7 +45,6 @@ export const jobStatus = pgEnum("job_status", [
   "failed",
 ]);
 
-/** Lifecycle of a single output rendition (360p, 480p, ...). */
 export const renditionStatus = pgEnum("rendition_status", [
   "pending",
   "processing",

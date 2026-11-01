@@ -15,6 +15,13 @@
       "when": 1793508342474,
       "tag": "0001_flat_the_twelve",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1793509329312,
+      "tag": "0002_tense_pride",
+      "breakpoints": true
     }
   ]
 }

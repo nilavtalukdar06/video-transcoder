@@ -204,7 +204,9 @@ paths:
         Returns a presigned `PUT` URL (generated from a `PutObjectCommand`)
         that the client uploads the raw video file to directly. The request
         must send the returned `headers` (`Content-Type: video/mp4`) or S3
-        rejects it with a signature mismatch.
+        rejects it with a signature mismatch. A `videos` row is created for
+        the upload with status `uploading` (it is marked `failed` if the URL
+        cannot be generated); the worker and transcoder advance it from there.
       security:
         - cookieAuth: []
       responses:
@@ -223,6 +225,12 @@ paths:
           $ref: "#/components/responses/Unauthorized"
         "429":
           $ref: "#/components/responses/TooManyRequests"
+        "500":
+          description: The upload could not be recorded or the URL could not be generated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
 
 components:
   securitySchemes:
@@ -333,6 +341,12 @@ components:
     PresignedUpload:
       type: object
       properties:
+        videoId:
+          type: string
+          format: uuid
+          description: >
+            Id of the tracked `videos` row created for this upload (status
+            `uploading`).
         url:
           type: string
           format: uri
@@ -355,7 +369,7 @@ components:
           type: integer
           description: Seconds until the presigned URL expires
           example: 300
-      required: [url, method, headers, key, contentType, expiresIn]
+      required: [videoId, url, method, headers, key, contentType, expiresIn]
 
     DependencyStatus:
       type: object

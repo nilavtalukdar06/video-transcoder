@@ -80,10 +80,30 @@ when it changes.
 | `transcoding_jobs` | One row per transcoder (ECS) run of a video: `job_status`, `attempt`, `ecs_task_arn`, start/finish times |
 | `video_renditions` | One row per output (360p, 480p, ...) with `rendition_status`, output bucket/key and size                 |
 
-`video_status`: `uploaded` → `queued` → `processing` → `completed` / `failed`.
+`video_status`: `uploading` → `uploaded` → `queued` → `processing` → `completed` / `failed`.
 `job_status`: `pending` → `running` → `succeeded` / `failed`.
 `rendition_status`: `pending` → `processing` → `completed` / `failed`.
 Deleting a user cascades to their videos, jobs and renditions.
+
+### Status tracking
+
+Each service moves the rows through those statuses; any failed step marks the video (and the job and
+rendition involved) `failed` with an `error_message`.
+
+| Step                              | Owner      | Video        | Job         | Rendition                              |
+| --------------------------------- | ---------- | ------------ | ----------- | -------------------------------------- |
+| Presigned URL issued              | API        | `uploading`  |             |                                        |
+| Presign fails                     | API        | `failed`     |             |                                        |
+| S3 reports the object created     | worker     | `uploaded`   |             |                                        |
+| Job created, before `ecs:RunTask` | worker     | `queued`     | `pending`   |                                        |
+| `RunTask` fails                   | worker     | `failed`     | `failed`    |                                        |
+| Task starts                       | transcoder | `processing` | `running`   | all `pending`                          |
+| Each rendition                    | transcoder |              |             | `processing` → `completed` (key, size) |
+| Original deleted                  | transcoder | `completed`  | `succeeded` |                                        |
+| Any transcoder step fails         | transcoder | `failed`     | `failed`    | the one in progress `failed`           |
+
+A redelivered SQS message for a video that is already `queued` (task started), `processing` or
+`completed` is ignored. A `failed` video whose message is retried gets a new job (`attempt` + 1).
 
 ## API docs
 
@@ -96,15 +116,15 @@ is also available as JSON at `/docs/openapi.json`.
 
 ## Endpoints
 
-| Method | Path                            | Auth | Description                        |
-| ------ | ------------------------------- | ---- | ---------------------------------- |
-| GET    | `/api/v1/health`                | —    | Liveness                           |
-| GET    | `/api/v1/health/ready`          | —    | Readiness (Postgres + Redis)       |
-| POST   | `/api/v1/auth/register`         | —    | Create an account                  |
-| POST   | `/api/v1/auth/login`            | —    | Start a session (sets `sid`)       |
-| POST   | `/api/v1/auth/logout`           | ✓    | Destroy the session                |
-| GET    | `/api/v1/auth/me`               | ✓    | Current user profile               |
-| POST   | `/api/v1/uploads/video/presign` | ✓    | Presigned S3 `PUT` URL for a video |
+| Method | Path                            | Auth | Description                                                                        |
+| ------ | ------------------------------- | ---- | ---------------------------------------------------------------------------------- |
+| GET    | `/api/v1/health`                | —    | Liveness                                                                           |
+| GET    | `/api/v1/health/ready`          | —    | Readiness (Postgres + Redis)                                                       |
+| POST   | `/api/v1/auth/register`         | —    | Create an account                                                                  |
+| POST   | `/api/v1/auth/login`            | —    | Start a session (sets `sid`)                                                       |
+| POST   | `/api/v1/auth/logout`           | ✓    | Destroy the session                                                                |
+| GET    | `/api/v1/auth/me`               | ✓    | Current user profile                                                               |
+| POST   | `/api/v1/uploads/video/presign` | ✓    | Presigned S3 `PUT` URL for a video; creates the tracked `videos` row (`uploading`) |
 
 ### Quick smoke test
 

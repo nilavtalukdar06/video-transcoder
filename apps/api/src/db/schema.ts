@@ -28,6 +28,7 @@ export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
 
 export const videoStatus = pgEnum("video_status", [
+  "uploading",
   "uploaded",
   "queued",
   "processing",

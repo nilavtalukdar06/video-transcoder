@@ -14,6 +14,8 @@ const env = createEnv({
       .string()
       .min(1, "AWS_S3_TRANSFORMED_BUCKET is required"),
     SOURCE_KEY: z.string().min(1).optional(),
+    VIDEO_ID: z.string().uuid().optional(),
+    JOB_ID: z.string().uuid().optional(),
     AWS_ACCESS_KEY: z.string().min(1).optional(),
     AWS_SECRET_KEY: z.string().min(1).optional(),
   },
@@ -51,6 +53,14 @@ export abstract class Env {
 
   static get SOURCE_KEY(): string | undefined {
     return env.SOURCE_KEY;
+  }
+
+  static get VIDEO_ID(): string | undefined {
+    return env.VIDEO_ID;
+  }
+
+  static get JOB_ID(): string | undefined {
+    return env.JOB_ID;
   }
 
   static get AWS_ACCESS_KEY(): string | undefined {

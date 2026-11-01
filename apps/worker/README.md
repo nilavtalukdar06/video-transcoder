@@ -39,8 +39,13 @@ event notifications** (`ObjectCreated:*`). For each uploaded object it starts th
 (`ecs:RunTask`) with `SOURCE_KEY=<object key>` as a container environment override, then deletes
 the message.
 
-- If `RunTask` fails, the message is left on the queue and retried after the visibility timeout
-  (configure a dead-letter queue to cap retries).
+- Every upload is tracked in Postgres (see the status table in [`apps/api`](../api#status-tracking)):
+  the API creates the `videos` row (`uploading`) when it presigns the upload; for each S3 event the worker marks it
+  `uploaded`, creates a `pending` job and marks the video `queued` (in one transaction, before `RunTask`), then
+  records the task ARN. `VIDEO_ID` and `JOB_ID` are passed to the task next to `SOURCE_KEY`. Objects without a
+  tracked video are ignored with a warning, and redelivered messages for a video that is already being handled are skipped.
+- If `RunTask` fails, the job and video are marked `failed` and the message is left on the queue and retried after the visibility timeout
+  (a retry creates a new job attempt; configure a dead-letter queue to cap retries).
 - Messages that are not object-created events (e.g. `Object Deleted`, `s3:TestEvent`), have an unparseable body, or
   come from a bucket other than `AWS_S3_BUCKET` start nothing and are deleted.
 - The configured credentials need `ecs:RunTask` on the task definition and `iam:PassRole` for the

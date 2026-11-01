@@ -2,6 +2,12 @@ import { ECSClient, RunTaskCommand } from "@aws-sdk/client-ecs";
 import { Env } from "../config/env";
 import { Logger } from "./logger";
 
+export interface TranscoderTaskInput {
+  sourceKey: string;
+  videoId: string;
+  jobId: string;
+}
+
 export abstract class TranscoderTask {
   private static client: ECSClient | null = null;
 
@@ -18,7 +24,11 @@ export abstract class TranscoderTask {
     return this.client;
   }
 
-  static async run(sourceKey: string): Promise<string> {
+  static async run({
+    sourceKey,
+    videoId,
+    jobId,
+  }: TranscoderTaskInput): Promise<string> {
     const { tasks, failures } = await this.getClient().send(
       new RunTaskCommand({
         cluster: Env.ECS_CLUSTER,
@@ -36,7 +46,11 @@ export abstract class TranscoderTask {
           containerOverrides: [
             {
               name: Env.ECS_CONTAINER_NAME,
-              environment: [{ name: "SOURCE_KEY", value: sourceKey }],
+              environment: [
+                { name: "SOURCE_KEY", value: sourceKey },
+                { name: "VIDEO_ID", value: videoId },
+                { name: "JOB_ID", value: jobId },
+              ],
             },
           ],
         },
@@ -49,7 +63,10 @@ export abstract class TranscoderTask {
       throw new Error(`ECS RunTask returned no task: ${reason ?? "unknown"}`);
     }
 
-    Logger.info({ taskArn, sourceKey }, "Started transcoder task");
+    Logger.info(
+      { taskArn, sourceKey, videoId, jobId },
+      "Started transcoder task",
+    );
     return taskArn;
   }
 
