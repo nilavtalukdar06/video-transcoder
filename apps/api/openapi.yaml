@@ -18,6 +18,8 @@ tags:
     description: Registration, login and session-based authentication
   - name: Uploads
     description: Presigned upload URLs for video files
+  - name: Logs
+    description: Transcoder logs stored in ClickHouse
 
 paths:
   /health:
@@ -232,6 +234,82 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorEnvelope"
 
+  /logs/{videoId}:
+    get:
+      tags: [Logs]
+      summary: Fetch the transcoder logs of a video
+      description: >
+        Returns the log lines the transcoder produced for one of the caller's
+        videos. They are read from the ClickHouse `log_events` table that
+        `apps/logs-consumer` fills from Kafka. Lines are ordered by arrival
+        time (then by the producer timestamp) and paged with `limit` /
+        `offset`. A video that does not exist or belongs to another user
+        returns 404.
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: videoId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: jobId
+          in: query
+          description: Only return logs of this transcoding job
+          schema:
+            type: string
+            format: uuid
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 500
+            default: 100
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+        - name: order
+          in: query
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: asc
+      responses:
+        "200":
+          description: A page of log events (empty if none were recorded yet)
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/LogsPage"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          description: Video not found (or not owned by the caller)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "500":
+          description: The logs could not be fetched from ClickHouse
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+
 components:
   securitySchemes:
     cookieAuth:
@@ -370,6 +448,55 @@ components:
           description: Seconds until the presigned URL expires
           example: 300
       required: [videoId, url, method, headers, key, contentType, expiresIn]
+
+    LogEvent:
+      type: object
+      properties:
+        eventId:
+          type: string
+          format: uuid
+        videoId:
+          type: string
+          format: uuid
+        jobId:
+          type: string
+          format: uuid
+          nullable: true
+        log:
+          type: string
+          example: "Transcoding 720p..."
+        metadata:
+          type: object
+          nullable: true
+          description: >
+            Extra data stored by the consumer: `producedAt` (when the
+            transcoder emitted the line) and the Kafka `topic`, `partition`
+            and `offset`.
+          additionalProperties: true
+        timestamp:
+          type: string
+          format: date-time
+          description: When the line was inserted into ClickHouse
+      required: [eventId, videoId, jobId, log, metadata, timestamp]
+
+    LogsPage:
+      type: object
+      properties:
+        videoId:
+          type: string
+          format: uuid
+        logs:
+          type: array
+          items:
+            $ref: "#/components/schemas/LogEvent"
+        limit:
+          type: integer
+        offset:
+          type: integer
+        hasMore:
+          type: boolean
+          description: Whether another page follows this one
+      required: [videoId, logs, limit, offset, hasMore]
 
     DependencyStatus:
       type: object

@@ -9,6 +9,7 @@ authentication, built on Drizzle (Postgres) and ioredis (Redis).
 - **Bundler:** [tsup](https://tsup.egoist.dev/) · **Dev runner:** [tsx](https://tsx.is/)
 - **Web:** Express 4 + helmet, cors, compression
 - **ORM:** Drizzle ORM (`node-postgres`)
+- **Logs:** ClickHouse (`@clickhouse/client`), filled by [`apps/logs-consumer`](../logs-consumer)
 - **Cache / sessions / rate limiting:** ioredis + connect-redis + rate-limiter-flexible
 - **Auth:** `express-session` (Redis store) + bcryptjs, users in Postgres
 - **Logging:** pino / pino-http
@@ -32,11 +33,13 @@ src/
   config/env.ts        validated environment (Env)
   db/                  Drizzle client (Database) + schema
   redis/               ioredis singleton (RedisClient)
+  clickhouse/          ClickHouse client singleton (ClickHouse)
   lib/                 Logger, ApiError, ApiResponse, asyncHandler
   middlewares/         RequestId, RateLimiter, Validate, AuthGuard, ErrorHandler
   modules/
     auth/              repository / service / controller / routes / schema
     health/            service / controller / routes
+    logs/              repository / service / controller / routes / schema
   routes/index.ts      mounts modules under /api/v1
   app.ts               App.create() -> configured express()
   server.ts            bootstrap + graceful shutdown
@@ -116,15 +119,24 @@ is also available as JSON at `/docs/openapi.json`.
 
 ## Endpoints
 
-| Method | Path                            | Auth | Description                                                                        |
-| ------ | ------------------------------- | ---- | ---------------------------------------------------------------------------------- |
-| GET    | `/api/v1/health`                | —    | Liveness                                                                           |
-| GET    | `/api/v1/health/ready`          | —    | Readiness (Postgres + Redis)                                                       |
-| POST   | `/api/v1/auth/register`         | —    | Create an account                                                                  |
-| POST   | `/api/v1/auth/login`            | —    | Start a session (sets `sid`)                                                       |
-| POST   | `/api/v1/auth/logout`           | ✓    | Destroy the session                                                                |
-| GET    | `/api/v1/auth/me`               | ✓    | Current user profile                                                               |
-| POST   | `/api/v1/uploads/video/presign` | ✓    | Presigned S3 `PUT` URL for a video; creates the tracked `videos` row (`uploading`) |
+| Method | Path                            | Auth | Description                                                                                  |
+| ------ | ------------------------------- | ---- | -------------------------------------------------------------------------------------------- |
+| GET    | `/api/v1/health`                | —    | Liveness                                                                                     |
+| GET    | `/api/v1/health/ready`          | —    | Readiness (Postgres + Redis)                                                                 |
+| POST   | `/api/v1/auth/register`         | —    | Create an account                                                                            |
+| POST   | `/api/v1/auth/login`            | —    | Start a session (sets `sid`)                                                                 |
+| POST   | `/api/v1/auth/logout`           | ✓    | Destroy the session                                                                          |
+| GET    | `/api/v1/auth/me`               | ✓    | Current user profile                                                                         |
+| POST   | `/api/v1/uploads/video/presign` | ✓    | Presigned S3 `PUT` URL for a video; creates the tracked `videos` row (`uploading`)           |
+| GET    | `/api/v1/logs/:videoId`         | ✓    | Transcoder logs of one of your videos, from ClickHouse (`jobId`, `limit`, `offset`, `order`) |
+
+### Logs
+
+`GET /api/v1/logs/:videoId` reads the `log_events` ClickHouse table that `apps/logs-consumer` fills from
+Kafka. It requires a session and only serves videos owned by the caller (404 otherwise). Query params:
+`jobId` (uuid), `limit` (1-500, default 100), `offset` (default 0) and `order` (`asc` default, `desc`);
+the response carries `hasMore` for paging. Needs `CLICKHOUSE_URL`, `CLICKHOUSE_USERNAME` and
+`CLICKHOUSE_PASSWORD`.
 
 ### Quick smoke test
 

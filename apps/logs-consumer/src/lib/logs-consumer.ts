@@ -1,7 +1,9 @@
 import { Kafka, logLevel, type Consumer, type KafkaConfig } from "kafkajs";
 import fs from "node:fs";
+import { randomUUID } from "node:crypto";
 import path from "node:path";
 import { Env } from "../config/env";
+import { ClickHouse, type LogEventRow } from "./clickhouse";
 import { LogMessageParser } from "./log-message";
 import { Logger } from "./logger";
 
@@ -52,22 +54,58 @@ export abstract class LogsConsumer {
     });
 
     await consumer.run({
-      eachMessage: async ({ topic, partition, message }) => {
-        const raw = message.value?.toString();
-        if (!raw) return;
+      eachBatchAutoResolve: false,
+      eachBatch: async ({
+        batch,
+        resolveOffset,
+        heartbeat,
+        commitOffsetsIfNecessary,
+      }) => {
+        const rows: LogEventRow[] = [];
 
-        try {
-          const { videoId, jobId, log, timestamp } =
-            LogMessageParser.parse(raw);
-          console.log(
-            `[video=${videoId ?? "-"} job=${jobId ?? "-"}] ${timestamp} ${log}`,
-          );
-        } catch (err) {
-          Logger.warn(
-            { err, topic, partition, offset: message.offset },
-            "Discarding Kafka message with an unparseable body",
-          );
+        for (const message of batch.messages) {
+          const raw = message.value?.toString();
+          if (!raw) continue;
+
+          try {
+            const { videoId, jobId, log, timestamp } =
+              LogMessageParser.parse(raw);
+            console.log(
+              `[video=${videoId ?? "-"} job=${jobId ?? "-"}] ${timestamp} ${log}`,
+            );
+            rows.push({
+              event_id: randomUUID(),
+              video_id: videoId ?? "",
+              job_id: jobId ?? "",
+              log,
+              metadata: JSON.stringify({
+                producedAt: timestamp,
+                topic: batch.topic,
+                partition: batch.partition,
+                offset: message.offset,
+              }),
+            });
+          } catch (err) {
+            Logger.warn(
+              {
+                err,
+                topic: batch.topic,
+                partition: batch.partition,
+                offset: message.offset,
+              },
+              "Discarding Kafka message with an unparseable body",
+            );
+          }
         }
+
+        // Offsets are only resolved and committed once the insert succeeded; if
+        // it throws, kafkajs retries the batch from the last resolved offset.
+        await ClickHouse.insertLogEvents(rows);
+        for (const message of batch.messages) {
+          resolveOffset(message.offset);
+        }
+        await commitOffsetsIfNecessary();
+        await heartbeat();
       },
     });
 

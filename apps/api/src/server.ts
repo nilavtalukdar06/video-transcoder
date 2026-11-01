@@ -1,6 +1,7 @@
 import { createServer } from "node:http";
 import { App } from "./app";
 import { Env } from "./config/env";
+import { ClickHouse } from "./clickhouse";
 import { Database } from "./db";
 import { Logger } from "./lib/logger";
 import { RedisClient } from "./redis";
@@ -70,7 +71,11 @@ abstract class Server {
         Logger.info("HTTP server closed");
       }
 
-      await Promise.allSettled([Database.close(), RedisClient.quit()]);
+      await Promise.allSettled([
+        Database.close(),
+        RedisClient.quit(),
+        ClickHouse.close(),
+      ]);
 
       clearTimeout(forceTimer);
       Logger.info("Shutdown complete");

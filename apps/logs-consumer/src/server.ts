@@ -1,6 +1,7 @@
 import { createServer } from "node:http";
 import { App } from "./app";
 import { Env } from "./config/env";
+import { ClickHouse } from "./lib/clickhouse";
 import { Logger } from "./lib/logger";
 import { LogsConsumer } from "./lib/logs-consumer";
 
@@ -12,6 +13,8 @@ abstract class Server {
 
   static async start(): Promise<void> {
     Env.validate();
+
+    await ClickHouse.connect();
 
     const app = App.create();
     this.httpServer = createServer(app);
@@ -67,6 +70,8 @@ abstract class Server {
         });
         Logger.info("HTTP server closed");
       }
+
+      await ClickHouse.close();
 
       clearTimeout(forceTimer);
       Logger.info("Shutdown complete");

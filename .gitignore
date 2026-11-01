@@ -17,7 +17,7 @@ dist/
 ca.pem
 
 # Logs
-logs/
+/logs/
 *.log
 npm-debug.log*
 

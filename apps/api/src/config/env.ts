@@ -26,6 +26,10 @@ const env = createEnv({
     AWS_SECRET_KEY: z.string().min(1, "AWS_SECRET_KEY is required"),
     AWS_REGION: z.string().min(1, "AWS_REGION is required"),
     AWS_S3_BUCKET: z.string().min(1, "AWS_S3_BUCKET is required"),
+
+    CLICKHOUSE_URL: z.string().url("CLICKHOUSE_URL must be a valid URL"),
+    CLICKHOUSE_USERNAME: z.string().min(1).default("default"),
+    CLICKHOUSE_PASSWORD: z.string().min(1, "CLICKHOUSE_PASSWORD is required"),
   },
   runtimeEnv: process.env,
 
@@ -101,6 +105,18 @@ export abstract class Env {
 
   static get AWS_S3_BUCKET(): string {
     return env.AWS_S3_BUCKET;
+  }
+
+  static get CLICKHOUSE_URL(): string {
+    return env.CLICKHOUSE_URL;
+  }
+
+  static get CLICKHOUSE_USERNAME(): string {
+    return env.CLICKHOUSE_USERNAME;
+  }
+
+  static get CLICKHOUSE_PASSWORD(): string {
+    return env.CLICKHOUSE_PASSWORD;
   }
 
   static validate(): void {

@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { AuthRoutes } from "../modules/auth/auth.routes";
 import { HealthRoutes } from "../modules/health/health.routes";
+import { LogsRoutes } from "../modules/logs/logs.routes";
 import { UploadsRoutes } from "../modules/uploads/uploads.routes";
 
 export abstract class ApiRoutes {
@@ -9,6 +10,7 @@ export abstract class ApiRoutes {
     router.use("/health", HealthRoutes.router());
     router.use("/auth", AuthRoutes.router());
     router.use("/uploads", UploadsRoutes.router());
+    router.use("/logs", LogsRoutes.router());
     return router;
   }
 }
