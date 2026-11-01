@@ -36,7 +36,7 @@ export abstract class ErrorHandler {
       success: false,
       message,
       data: null,
-      requestId: req.id,
+      requestId: req.id === undefined ? undefined : String(req.id),
     };
     if (apiError.details !== undefined && exposeDetails) {
       body.details = apiError.details;

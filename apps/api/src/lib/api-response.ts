@@ -16,7 +16,7 @@ export abstract class ApiResponse {
       success: statusCode >= 200 && statusCode < 400,
       message,
       data,
-      requestId: res.req.id,
+      requestId: res.req.id === undefined ? undefined : String(res.req.id),
     };
     return res.status(statusCode).json(body);
   }
