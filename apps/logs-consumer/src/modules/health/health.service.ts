@@ -1,12 +1,10 @@
 import { ClickHouse } from "../../lib/clickhouse";
 import { LogsConsumer } from "../../lib/logs-consumer";
-
 export interface DependencyStatus {
   status: "up" | "down";
   latencyMs: number;
   error?: string;
 }
-
 export interface HealthReport {
   status: "ok" | "degraded";
   uptime: number;
@@ -16,7 +14,6 @@ export interface HealthReport {
     clickhouse: DependencyStatus;
   };
 }
-
 export abstract class HealthService {
   private static async probe(
     fn: () => Promise<boolean>,
@@ -36,13 +33,11 @@ export abstract class HealthService {
       };
     }
   }
-
   static async check(): Promise<HealthReport> {
     const [kafka, clickhouse] = await Promise.all([
       this.probe(async () => LogsConsumer.isRunning),
       this.probe(() => ClickHouse.ping()),
     ]);
-
     return {
       status:
         kafka.status === "up" && clickhouse.status === "up" ? "ok" : "degraded",

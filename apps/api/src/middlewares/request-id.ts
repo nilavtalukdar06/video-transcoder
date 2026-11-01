@@ -1,8 +1,6 @@
 import { randomUUID } from "node:crypto";
 import type { RequestHandler } from "express";
-
 const HEADER = "x-request-id";
-
 export abstract class RequestId {
   static handler(): RequestHandler {
     return (req, res, next) => {

@@ -2,16 +2,12 @@ import { and, eq } from "drizzle-orm";
 import { Database } from "../db";
 import { transcodingJobs, videoRenditions, videos } from "../db/schema";
 import type { Rendition } from "./ffmpeg";
-
-const MAX_ERROR_LENGTH = 2_000;
-
+const MAX_ERROR_LENGTH = 2000;
 export interface TrackedRun {
   videoId: string;
   jobId: string;
 }
-
 export abstract class Tracking {
-  /** Job -> `running`, video -> `processing`. */
   static async start({ videoId, jobId }: TrackedRun): Promise<void> {
     await Database.db.transaction(async (tx) => {
       await tx
@@ -24,8 +20,6 @@ export abstract class Tracking {
         .where(eq(videos.id, videoId));
     });
   }
-
-  /** Creates (or resets, on a retry) one `pending` rendition row per output. */
   static async initRenditions(
     { videoId, jobId }: TrackedRun,
     renditions: readonly Rendition[],
@@ -54,18 +48,20 @@ export abstract class Tracking {
         },
       });
   }
-
   static async renditionProcessing(
     { videoId }: TrackedRun,
     name: string,
   ): Promise<void> {
     await this.updateRendition(videoId, name, { status: "processing" });
   }
-
   static async renditionCompleted(
     { videoId }: TrackedRun,
     name: string,
-    output: { bucket: string; key: string; sizeBytes: number },
+    output: {
+      bucket: string;
+      key: string;
+      sizeBytes: number;
+    },
   ): Promise<void> {
     await this.updateRendition(videoId, name, {
       status: "completed",
@@ -75,8 +71,6 @@ export abstract class Tracking {
       completedAt: new Date(),
     });
   }
-
-  /** Job -> `succeeded`, video -> `completed`. */
   static async complete({ videoId, jobId }: TrackedRun): Promise<void> {
     const now = new Date();
     await Database.db.transaction(async (tx) => {
@@ -90,11 +84,6 @@ export abstract class Tracking {
         .where(eq(videos.id, videoId));
     });
   }
-
-  /**
-   * Marks the job, the video and the rendition in progress (if any) `failed`.
-   * Never throws, so it cannot mask the error that caused the failure.
-   */
   static async fail(
     { videoId, jobId }: TrackedRun,
     err: unknown,
@@ -103,7 +92,6 @@ export abstract class Tracking {
     const errorMessage = (
       err instanceof Error ? err.message : String(err)
     ).slice(0, MAX_ERROR_LENGTH);
-
     try {
       await Database.db.transaction(async (tx) => {
         if (renditionName) {
@@ -130,7 +118,6 @@ export abstract class Tracking {
       console.error("Could not mark video as failed:", dbErr);
     }
   }
-
   private static async updateRendition(
     videoId: string,
     name: string,

@@ -1,7 +1,6 @@
 import { ApiResponse } from "../../lib/api-response";
 import { asyncHandler } from "../../lib/async-handler";
 import { HealthService } from "./health.service";
-
 export abstract class HealthController {
   static live = asyncHandler(async (_req, res) => {
     ApiResponse.ok(
@@ -10,7 +9,6 @@ export abstract class HealthController {
       "Alive",
     );
   });
-
   static ready = asyncHandler(async (_req, res) => {
     const report = await HealthService.check();
     const statusCode = report.status === "ok" ? 200 : 503;

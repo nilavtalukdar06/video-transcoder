@@ -1,10 +1,8 @@
 import { createClient, type ClickHouseClient } from "@clickhouse/client";
 import { Env } from "../config/env";
 import { Logger } from "../lib/logger";
-
 export abstract class ClickHouse {
   private static instance: ClickHouseClient | null = null;
-
   static getClient(): ClickHouseClient {
     if (!this.instance) {
       this.instance = createClient({
@@ -15,7 +13,6 @@ export abstract class ClickHouse {
     }
     return this.instance;
   }
-
   static async close(): Promise<void> {
     if (this.instance) {
       await this.instance.close();

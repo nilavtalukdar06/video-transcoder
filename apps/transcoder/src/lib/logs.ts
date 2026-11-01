@@ -1,8 +1,6 @@
 import { Env } from "../config/env";
 import { producer } from "./kafka";
-
 let connected = false;
-
 export abstract class Logs {
   static async connect(): Promise<void> {
     if (connected) return;
@@ -14,7 +12,6 @@ export abstract class Logs {
       console.error("Could not connect Kafka producer:", err);
     }
   }
-
   static async close(): Promise<void> {
     if (!connected) return;
     connected = false;
@@ -26,12 +23,9 @@ export abstract class Logs {
     }
   }
 }
-
 export async function processLogs(logs: string): Promise<void> {
   console.log(logs);
-
   if (!connected) return;
-
   try {
     await producer.send({
       topic: Env.KAFKA_LOGS_TOPIC,

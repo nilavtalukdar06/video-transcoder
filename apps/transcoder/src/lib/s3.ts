@@ -8,10 +8,8 @@ import {
 } from "@aws-sdk/client-s3";
 import { Upload } from "@aws-sdk/lib-storage";
 import { Env } from "../config/env";
-
 export abstract class S3 {
   private static client: S3Client | null = null;
-
   static getClient(): S3Client {
     if (!this.client) {
       this.client = new S3Client({
@@ -28,7 +26,6 @@ export abstract class S3 {
     }
     return this.client;
   }
-
   static async download(
     bucket: string,
     key: string,
@@ -40,7 +37,6 @@ export abstract class S3 {
     if (!Body) throw new Error(`s3://${bucket}/${key} has an empty body`);
     await pipeline(Body as Readable, createWriteStream(destPath));
   }
-
   static async upload(
     bucket: string,
     key: string,
@@ -57,7 +53,6 @@ export abstract class S3 {
       },
     }).done();
   }
-
   static async delete(bucket: string, key: string): Promise<void> {
     await this.getClient().send(
       new DeleteObjectCommand({ Bucket: bucket, Key: key }),

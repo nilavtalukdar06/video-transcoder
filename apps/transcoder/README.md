@@ -34,7 +34,7 @@ Every rendition is produced regardless of the source resolution (smaller sources
 | `KAFKA_BROKER`                      | yes      | Kafka bootstrap broker the task logs are produced to                       |
 | `KAFKA_SSL` / `KAFKA_SASL`          | no       | Default `true`. SSL reads the CA certificate from `ca.pem` (see below)     |
 | `KAFKA_USERNAME` / `KAFKA_PASSWORD` | no       | SASL/PLAIN credentials, used when `KAFKA_SASL` is `true`                   |
-| `KAFKA_LOGS_TOPIC`                  | no       | Topic the logs are produced to (default `transcoding-logs`)                 |
+| `KAFKA_LOGS_TOPIC`                  | no       | Topic the logs are produced to (default `transcoding-logs`)                |
 
 \* Not in `.env`: the worker provides `SOURCE_KEY`, `VIDEO_ID` and `JOB_ID` in the ECS task's runtime environment. It is optional in the env schema, but the task exits with an error if any is missing. For a local run, create a `videos` row and a `transcoding_jobs` row first and pass the values inline, e.g. `SOURCE_KEY=uploads/<userId>/<id>.mp4 VIDEO_ID=<uuid> JOB_ID=<uuid> pnpm dev`.
 

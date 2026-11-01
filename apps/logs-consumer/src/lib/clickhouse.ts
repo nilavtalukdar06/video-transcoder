@@ -1,10 +1,7 @@
 import { createClient, type ClickHouseClient } from "@clickhouse/client";
 import { Env } from "../config/env";
 import { Logger } from "./logger";
-
 const LOG_EVENTS_TABLE = "log_events";
-
-// `timestamp` is MATERIALIZED (insert time) so it is never written here.
 export interface LogEventRow {
   event_id: string;
   video_id: string;
@@ -12,10 +9,8 @@ export interface LogEventRow {
   log: string;
   metadata: string | null;
 }
-
 export abstract class ClickHouse {
   private static client: ClickHouseClient | null = null;
-
   private static getClient(): ClickHouseClient {
     if (!this.client) {
       this.client = createClient({
@@ -26,18 +21,15 @@ export abstract class ClickHouse {
     }
     return this.client;
   }
-
   static async connect(): Promise<void> {
     const result = await this.getClient().ping();
     if (!result.success) throw result.error;
     Logger.info("ClickHouse connected");
   }
-
   static async ping(): Promise<boolean> {
     const result = await this.getClient().ping();
     return result.success;
   }
-
   static async insertLogEvents(rows: LogEventRow[]): Promise<void> {
     if (rows.length === 0) return;
     await this.getClient().insert({
@@ -46,7 +38,6 @@ export abstract class ClickHouse {
       format: "JSONEachRow",
     });
   }
-
   static async close(): Promise<void> {
     if (this.client) {
       await this.client.close();

@@ -1,9 +1,7 @@
 import { pino, type Logger as PinoLogger } from "pino";
 import { Env } from "../config/env";
-
 export abstract class Logger {
   private static instance: PinoLogger | null = null;
-
   static get(): PinoLogger {
     if (!this.instance) {
       this.instance = pino({
@@ -35,19 +33,15 @@ export abstract class Logger {
     }
     return this.instance;
   }
-
   static info(obj: unknown, msg?: string): void {
     this.get().info(obj as object, msg);
   }
-
   static error(obj: unknown, msg?: string): void {
     this.get().error(obj as object, msg);
   }
-
   static warn(obj: unknown, msg?: string): void {
     this.get().warn(obj as object, msg);
   }
-
   static debug(obj: unknown, msg?: string): void {
     this.get().debug(obj as object, msg);
   }

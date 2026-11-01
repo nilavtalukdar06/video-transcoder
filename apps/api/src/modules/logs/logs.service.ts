@@ -2,11 +2,9 @@ import { ApiError } from "../../lib/api-error";
 import { Logger } from "../../lib/logger";
 import { LogsRepository, type LogEventRecord } from "./logs.repository";
 import type { LogsQuery } from "./logs.schema";
-
 export interface LogEvent extends Omit<LogEventRecord, "metadata"> {
   metadata: Record<string, unknown> | null;
 }
-
 export interface LogsPage {
   videoId: string;
   logs: LogEvent[];
@@ -14,7 +12,6 @@ export interface LogsPage {
   offset: number;
   hasMore: boolean;
 }
-
 function parseMetadata(raw: string | null): Record<string, unknown> | null {
   if (!raw) return null;
   try {
@@ -26,7 +23,6 @@ function parseMetadata(raw: string | null): Record<string, unknown> | null {
     return null;
   }
 }
-
 export abstract class LogsService {
   static async getVideoLogs(
     userId: string,
@@ -37,10 +33,8 @@ export abstract class LogsService {
     if (!owned) {
       throw ApiError.notFound("Video not found");
     }
-
     let records: LogEventRecord[];
     try {
-      // One extra row tells us whether another page exists.
       records = await LogsRepository.findByVideo(videoId, {
         ...query,
         limit: query.limit + 1,
@@ -49,7 +43,6 @@ export abstract class LogsService {
       Logger.error({ err, videoId }, "Could not query logs from ClickHouse");
       throw ApiError.internal("Could not fetch logs", err);
     }
-
     const hasMore = records.length > query.limit;
     return {
       videoId,

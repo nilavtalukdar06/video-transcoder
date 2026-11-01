@@ -1,19 +1,15 @@
 import { spawn } from "node:child_process";
-
 export interface Rendition {
   name: string;
   height: number;
 }
-
 export const RENDITIONS: readonly Rendition[] = [
   { name: "360p", height: 360 },
   { name: "480p", height: 480 },
   { name: "720p", height: 720 },
   { name: "1080p", height: 1080 },
 ];
-
-const STDERR_TAIL_BYTES = 4_000;
-
+const STDERR_TAIL_BYTES = 4000;
 export abstract class FFmpeg {
   static transcode(
     inputPath: string,
@@ -45,7 +41,6 @@ export abstract class FFmpeg {
       "+faststart",
       outputPath,
     ];
-
     return new Promise((resolve, reject) => {
       const proc = spawn("ffmpeg", args, {
         stdio: ["ignore", "ignore", "pipe"],

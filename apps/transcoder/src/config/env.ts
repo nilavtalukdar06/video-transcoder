@@ -1,7 +1,6 @@
 import "dotenv/config";
 import { createEnv } from "@t3-oss/env-core";
 import { z } from "zod";
-
 const env = createEnv({
   server: {
     NODE_ENV: z
@@ -32,7 +31,6 @@ const env = createEnv({
     KAFKA_LOGS_TOPIC: z.string().min(1).default("transcoding-logs"),
   },
   runtimeEnv: process.env,
-
   emptyStringAsUndefined: true,
   onValidationError: (issues) => {
     const formatted = issues
@@ -41,72 +39,55 @@ const env = createEnv({
     throw new Error(`Invalid environment configuration:\n${formatted}`);
   },
 });
-
 export abstract class Env {
   static get NODE_ENV(): (typeof env)["NODE_ENV"] {
     return env.NODE_ENV;
   }
-
   static get DATABASE_URL(): string {
     return env.DATABASE_URL;
   }
-
   static get AWS_REGION(): string {
     return env.AWS_REGION;
   }
-
   static get AWS_S3_BUCKET(): string {
     return env.AWS_S3_BUCKET;
   }
-
   static get AWS_S3_TRANSFORMED_BUCKET(): string {
     return env.AWS_S3_TRANSFORMED_BUCKET;
   }
-
   static get SOURCE_KEY(): string | undefined {
     return env.SOURCE_KEY;
   }
-
   static get VIDEO_ID(): string | undefined {
     return env.VIDEO_ID;
   }
-
   static get JOB_ID(): string | undefined {
     return env.JOB_ID;
   }
-
   static get AWS_ACCESS_KEY(): string | undefined {
     return env.AWS_ACCESS_KEY;
   }
-
   static get AWS_SECRET_KEY(): string | undefined {
     return env.AWS_SECRET_KEY;
   }
-
   static get KAFKA_BROKER(): string {
     return env.KAFKA_BROKER;
   }
-
   static get KAFKA_SSL(): boolean {
     return env.KAFKA_SSL;
   }
-
   static get KAFKA_SASL(): boolean {
     return env.KAFKA_SASL;
   }
-
   static get KAFKA_USERNAME(): string | undefined {
     return env.KAFKA_USERNAME;
   }
-
   static get KAFKA_PASSWORD(): string | undefined {
     return env.KAFKA_PASSWORD;
   }
-
   static get KAFKA_LOGS_TOPIC(): string {
     return env.KAFKA_LOGS_TOPIC;
   }
-
   static validate(): void {
     void env.NODE_ENV;
   }

@@ -1,13 +1,11 @@
 import "dotenv/config";
 import { createEnv } from "@t3-oss/env-core";
 import { z } from "zod";
-
 const splitList = (value: string): string[] =>
   value
     .split(",")
     .map((item) => item.trim())
     .filter(Boolean);
-
 const env = createEnv({
   server: {
     NODE_ENV: z
@@ -34,7 +32,6 @@ const env = createEnv({
     ECS_ASSIGN_PUBLIC_IP: z.enum(["ENABLED", "DISABLED"]).default("ENABLED"),
   },
   runtimeEnv: process.env,
-
   emptyStringAsUndefined: true,
   onValidationError: (issues) => {
     const formatted = issues
@@ -43,72 +40,55 @@ const env = createEnv({
     throw new Error(`Invalid environment configuration:\n${formatted}`);
   },
 });
-
 export abstract class Env {
   static get NODE_ENV(): (typeof env)["NODE_ENV"] {
     return env.NODE_ENV;
   }
-
   static get isProduction(): boolean {
     return env.NODE_ENV === "production";
   }
-
   static get isDevelopment(): boolean {
     return env.NODE_ENV === "development";
   }
-
   static get PORT(): number {
     return env.PORT;
   }
-
   static get DATABASE_URL(): string {
     return env.DATABASE_URL;
   }
-
   static get AWS_ACCESS_KEY(): string {
     return env.AWS_ACCESS_KEY;
   }
-
   static get AWS_SECRET_KEY(): string {
     return env.AWS_SECRET_KEY;
   }
-
   static get AWS_REGION(): string {
     return env.AWS_REGION;
   }
-
   static get AWS_S3_BUCKET(): string {
     return env.AWS_S3_BUCKET;
   }
-
   static get SQS_URL(): string {
     return env.SQS_URL;
   }
-
   static get ECS_CLUSTER(): string {
     return env.ECS_CLUSTER;
   }
-
   static get ECS_TASK_DEFINITION(): string {
     return env.ECS_TASK_DEFINITION;
   }
-
   static get ECS_CONTAINER_NAME(): string {
     return env.ECS_CONTAINER_NAME;
   }
-
   static get ECS_SUBNETS(): string[] {
     return env.ECS_SUBNETS;
   }
-
   static get ECS_SECURITY_GROUPS(): string[] {
     return env.ECS_SECURITY_GROUPS;
   }
-
   static get ECS_ASSIGN_PUBLIC_IP(): "ENABLED" | "DISABLED" {
     return env.ECS_ASSIGN_PUBLIC_IP;
   }
-
   static validate(): void {
     void env.NODE_ENV;
   }

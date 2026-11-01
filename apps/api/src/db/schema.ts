@@ -9,7 +9,6 @@ import {
   unique,
   uuid,
 } from "drizzle-orm/pg-core";
-
 export const users = pgTable("users", {
   id: uuid("id").primaryKey().defaultRandom(),
   email: text("email").notNull().unique(),
@@ -23,10 +22,8 @@ export const users = pgTable("users", {
     .defaultNow()
     .$onUpdate(() => new Date()),
 });
-
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
-
 export const videoStatus = pgEnum("video_status", [
   "uploading",
   "uploaded",
@@ -35,21 +32,18 @@ export const videoStatus = pgEnum("video_status", [
   "completed",
   "failed",
 ]);
-
 export const jobStatus = pgEnum("job_status", [
   "pending",
   "running",
   "succeeded",
   "failed",
 ]);
-
 export const renditionStatus = pgEnum("rendition_status", [
   "pending",
   "processing",
   "completed",
   "failed",
 ]);
-
 export const videos = pgTable(
   "videos",
   {
@@ -76,10 +70,8 @@ export const videos = pgTable(
     index("videos_status_idx").on(t.status),
   ],
 );
-
 export type Video = typeof videos.$inferSelect;
 export type NewVideo = typeof videos.$inferInsert;
-
 export const transcodingJobs = pgTable(
   "transcoding_jobs",
   {
@@ -107,10 +99,8 @@ export const transcodingJobs = pgTable(
     unique("transcoding_jobs_video_id_attempt_unique").on(t.videoId, t.attempt),
   ],
 );
-
 export type TranscodingJob = typeof transcodingJobs.$inferSelect;
 export type NewTranscodingJob = typeof transcodingJobs.$inferInsert;
-
 export const videoRenditions = pgTable(
   "video_renditions",
   {
@@ -142,6 +132,5 @@ export const videoRenditions = pgTable(
     index("video_renditions_job_id_idx").on(t.jobId),
   ],
 );
-
 export type VideoRendition = typeof videoRenditions.$inferSelect;
 export type NewVideoRendition = typeof videoRenditions.$inferInsert;

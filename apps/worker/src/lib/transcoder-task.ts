@@ -1,16 +1,13 @@
 import { ECSClient, RunTaskCommand } from "@aws-sdk/client-ecs";
 import { Env } from "../config/env";
 import { Logger } from "./logger";
-
 export interface TranscoderTaskInput {
   sourceKey: string;
   videoId: string;
   jobId: string;
 }
-
 export abstract class TranscoderTask {
   private static client: ECSClient | null = null;
-
   private static getClient(): ECSClient {
     if (!this.client) {
       this.client = new ECSClient({
@@ -23,7 +20,6 @@ export abstract class TranscoderTask {
     }
     return this.client;
   }
-
   static async run({
     sourceKey,
     videoId,
@@ -56,20 +52,17 @@ export abstract class TranscoderTask {
         },
       }),
     );
-
     const taskArn = tasks?.[0]?.taskArn;
     if (!taskArn) {
       const reason = failures?.map((f) => `${f.arn}: ${f.reason}`).join("; ");
       throw new Error(`ECS RunTask returned no task: ${reason ?? "unknown"}`);
     }
-
     Logger.info(
       { taskArn, sourceKey, videoId, jobId },
       "Started transcoder task",
     );
     return taskArn;
   }
-
   static destroy(): void {
     this.client?.destroy();
     this.client = null;

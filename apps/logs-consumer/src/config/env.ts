@@ -1,12 +1,10 @@
 import "dotenv/config";
 import { createEnv } from "@t3-oss/env-core";
 import { z } from "zod";
-
 const booleanString = z
   .enum(["true", "false"])
   .default("true")
   .transform((value) => value === "true");
-
 const env = createEnv({
   server: {
     NODE_ENV: z
@@ -25,7 +23,6 @@ const env = createEnv({
     CLICKHOUSE_PASSWORD: z.string().min(1, "CLICKHOUSE_PASSWORD is required"),
   },
   runtimeEnv: process.env,
-
   emptyStringAsUndefined: true,
   onValidationError: (issues) => {
     const formatted = issues
@@ -34,64 +31,49 @@ const env = createEnv({
     throw new Error(`Invalid environment configuration:\n${formatted}`);
   },
 });
-
 export abstract class Env {
   static get NODE_ENV(): (typeof env)["NODE_ENV"] {
     return env.NODE_ENV;
   }
-
   static get isProduction(): boolean {
     return env.NODE_ENV === "production";
   }
-
   static get isDevelopment(): boolean {
     return env.NODE_ENV === "development";
   }
-
   static get PORT(): number {
     return env.PORT;
   }
-
   static get KAFKA_BROKER(): string {
     return env.KAFKA_BROKER;
   }
-
   static get KAFKA_SSL(): boolean {
     return env.KAFKA_SSL;
   }
-
   static get KAFKA_SASL(): boolean {
     return env.KAFKA_SASL;
   }
-
   static get KAFKA_USERNAME(): string | undefined {
     return env.KAFKA_USERNAME;
   }
-
   static get KAFKA_PASSWORD(): string | undefined {
     return env.KAFKA_PASSWORD;
   }
-
   static get KAFKA_LOGS_TOPIC(): string {
     return env.KAFKA_LOGS_TOPIC;
   }
-
   static get KAFKA_GROUP_ID(): string {
     return env.KAFKA_GROUP_ID;
   }
-
   static get CLICKHOUSE_URL(): string {
     return env.CLICKHOUSE_URL;
   }
-
   static get CLICKHOUSE_USERNAME(): string {
     return env.CLICKHOUSE_USERNAME;
   }
-
   static get CLICKHOUSE_PASSWORD(): string {
     return env.CLICKHOUSE_PASSWORD;
   }
-
   static validate(): void {
     void env.NODE_ENV;
   }

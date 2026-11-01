@@ -1,6 +1,5 @@
 import { Router } from "express";
 import { HealthController } from "./health.controller";
-
 export abstract class HealthRoutes {
   static router(): Router {
     const router = Router();

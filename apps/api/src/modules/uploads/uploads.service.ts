@@ -6,10 +6,8 @@ import { ApiError } from "../../lib/api-error";
 import { Logger } from "../../lib/logger";
 import { S3 } from "../../lib/s3";
 import { UploadsRepository } from "./uploads.repository";
-
 export const VIDEO_CONTENT_TYPE = "video/mp4";
 const PRESIGN_TTL_SECONDS = 300;
-
 export interface PresignedUpload {
   videoId: string;
   url: string;
@@ -19,11 +17,9 @@ export interface PresignedUpload {
   contentType: string;
   expiresIn: number;
 }
-
 export abstract class UploadsService {
   static async createVideoUpload(userId: string): Promise<PresignedUpload> {
     const key = `uploads/${userId}/${randomUUID()}.mp4`;
-
     let video;
     try {
       video = await UploadsRepository.createVideo({
@@ -35,7 +31,6 @@ export abstract class UploadsService {
     } catch (err) {
       throw ApiError.internal("Could not create upload", err);
     }
-
     try {
       const url = await getSignedUrl(
         S3.getClient(),
@@ -49,7 +44,6 @@ export abstract class UploadsService {
           signableHeaders: new Set(["content-type"]),
         },
       );
-
       return {
         videoId: video.id,
         url,

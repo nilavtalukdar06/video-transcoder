@@ -1,12 +1,10 @@
 import { Database } from "../../db";
 import { RedisClient } from "../../redis";
-
 export interface DependencyStatus {
   status: "up" | "down";
   latencyMs: number;
   error?: string;
 }
-
 export interface HealthReport {
   status: "ok" | "degraded";
   uptime: number;
@@ -16,7 +14,6 @@ export interface HealthReport {
     redis: DependencyStatus;
   };
 }
-
 export abstract class HealthService {
   private static async probe(
     fn: () => Promise<boolean>,
@@ -36,15 +33,12 @@ export abstract class HealthService {
       };
     }
   }
-
   static async check(): Promise<HealthReport> {
     const [postgres, redis] = await Promise.all([
       this.probe(() => Database.ping()),
       this.probe(() => RedisClient.ping()),
     ]);
-
     const healthy = postgres.status === "up" && redis.status === "up";
-
     return {
       status: healthy ? "ok" : "degraded",
       uptime: Math.round(process.uptime()),

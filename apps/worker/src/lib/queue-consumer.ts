@@ -9,17 +9,14 @@ import { Logger } from "./logger";
 import { S3Event, type S3ObjectRef } from "./s3-event";
 import { TranscoderTask } from "./transcoder-task";
 import { VideoTracker } from "./video-tracker";
-
 const WAIT_TIME_SECONDS = 20;
 const MAX_MESSAGES = 10;
-const ERROR_BACKOFF_MS = 5_000;
-
+const ERROR_BACKOFF_MS = 5000;
 export abstract class QueueConsumer {
   private static client: SQSClient | null = null;
   private static running = false;
   private static abortController: AbortController | null = null;
   private static loop: Promise<void> | null = null;
-
   private static getClient(): SQSClient {
     if (!this.client) {
       this.client = new SQSClient({
@@ -32,7 +29,6 @@ export abstract class QueueConsumer {
     }
     return this.client;
   }
-
   static start(): void {
     if (this.running) return;
     this.running = true;
@@ -40,7 +36,6 @@ export abstract class QueueConsumer {
     this.loop = this.poll();
     Logger.info({ queueUrl: Env.SQS_URL }, "SQS consumer started");
   }
-
   static async stop(): Promise<void> {
     if (!this.running) return;
     this.running = false;
@@ -51,10 +46,8 @@ export abstract class QueueConsumer {
     TranscoderTask.destroy();
     Logger.info("SQS consumer stopped");
   }
-
   private static async poll(): Promise<void> {
     const signal = this.abortController!.signal;
-
     while (this.running) {
       try {
         const { Messages } = await this.getClient().send(
@@ -65,7 +58,6 @@ export abstract class QueueConsumer {
           }),
           { abortSignal: signal },
         );
-
         for (const message of Messages ?? []) {
           try {
             await this.handle(message);
@@ -83,22 +75,18 @@ export abstract class QueueConsumer {
       }
     }
   }
-
   private static async handle(message: Message): Promise<void> {
     const objects = this.parseObjects(message);
-
     Logger.info(
       { messageId: message.MessageId, objects },
       "Received SQS event",
     );
-
     if (objects.length === 0) {
       Logger.warn(
         { messageId: message.MessageId, body: message.Body },
         "SQS event contained no created objects",
       );
     }
-
     for (const { bucket, key, size } of objects) {
       if (bucket !== Env.AWS_S3_BUCKET) {
         Logger.warn({ bucket, key }, "Ignoring object from unexpected bucket");
@@ -106,7 +94,6 @@ export abstract class QueueConsumer {
       }
       await this.process(key, size);
     }
-
     await this.getClient().send(
       new DeleteMessageCommand({
         QueueUrl: Env.SQS_URL,
@@ -114,11 +101,9 @@ export abstract class QueueConsumer {
       }),
     );
   }
-
   private static async process(key: string, size?: number): Promise<void> {
     const started = await VideoTracker.start(key, size);
     if (!started) return;
-
     try {
       const taskArn = await TranscoderTask.run({
         sourceKey: key,
@@ -130,7 +115,6 @@ export abstract class QueueConsumer {
       throw err;
     }
   }
-
   private static parseObjects(message: Message): S3ObjectRef[] {
     try {
       return S3Event.parseCreatedObjects(message.Body ?? "");

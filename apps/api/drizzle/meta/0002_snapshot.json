@@ -112,12 +112,8 @@
           "name": "transcoding_jobs_video_id_videos_id_fk",
           "tableFrom": "transcoding_jobs",
           "tableTo": "videos",
-          "columnsFrom": [
-            "video_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["video_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -127,10 +123,7 @@
         "transcoding_jobs_video_id_attempt_unique": {
           "name": "transcoding_jobs_video_id_attempt_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "video_id",
-            "attempt"
-          ]
+          "columns": ["video_id", "attempt"]
         }
       },
       "policies": {},
@@ -188,9 +181,7 @@
         "users_email_unique": {
           "name": "users_email_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "email"
-          ]
+          "columns": ["email"]
         }
       },
       "policies": {},
@@ -307,12 +298,8 @@
           "name": "video_renditions_video_id_videos_id_fk",
           "tableFrom": "video_renditions",
           "tableTo": "videos",
-          "columnsFrom": [
-            "video_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["video_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -320,12 +307,8 @@
           "name": "video_renditions_job_id_transcoding_jobs_id_fk",
           "tableFrom": "video_renditions",
           "tableTo": "transcoding_jobs",
-          "columnsFrom": [
-            "job_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["job_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -335,10 +318,7 @@
         "video_renditions_video_id_name_unique": {
           "name": "video_renditions_video_id_name_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "video_id",
-            "name"
-          ]
+          "columns": ["video_id", "name"]
         }
       },
       "policies": {},
@@ -452,12 +432,8 @@
           "name": "videos_user_id_users_id_fk",
           "tableFrom": "videos",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -467,9 +443,7 @@
         "videos_source_key_unique": {
           "name": "videos_source_key_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "source_key"
-          ]
+          "columns": ["source_key"]
         }
       },
       "policies": {},
@@ -481,22 +455,12 @@
     "public.job_status": {
       "name": "job_status",
       "schema": "public",
-      "values": [
-        "pending",
-        "running",
-        "succeeded",
-        "failed"
-      ]
+      "values": ["pending", "running", "succeeded", "failed"]
     },
     "public.rendition_status": {
       "name": "rendition_status",
       "schema": "public",
-      "values": [
-        "pending",
-        "processing",
-        "completed",
-        "failed"
-      ]
+      "values": ["pending", "processing", "completed", "failed"]
     },
     "public.video_status": {
       "name": "video_status",

@@ -3,7 +3,6 @@ import { AuthRoutes } from "../modules/auth/auth.routes";
 import { HealthRoutes } from "../modules/health/health.routes";
 import { LogsRoutes } from "../modules/logs/logs.routes";
 import { UploadsRoutes } from "../modules/uploads/uploads.routes";
-
 export abstract class ApiRoutes {
   static router(): Router {
     const router = Router();

@@ -3,10 +3,8 @@ import { RateLimiterRedis } from "rate-limiter-flexible";
 import { Env } from "../config/env";
 import { ApiError } from "../lib/api-error";
 import { RedisClient } from "../redis";
-
 export abstract class RateLimiter {
   private static limiter: RateLimiterRedis | null = null;
-
   private static get(): RateLimiterRedis {
     if (!this.limiter) {
       this.limiter = new RateLimiterRedis({
@@ -18,7 +16,6 @@ export abstract class RateLimiter {
     }
     return this.limiter;
   }
-
   static middleware(options?: {
     points?: number;
     duration?: number;
@@ -33,7 +30,6 @@ export abstract class RateLimiter {
             points: options.points ?? Env.RATE_LIMIT_POINTS,
             duration: options.duration ?? Env.RATE_LIMIT_DURATION,
           });
-
     return (req, res, next) => {
       const key = req.ip ?? "unknown";
       limiter
@@ -49,8 +45,13 @@ export abstract class RateLimiter {
             "msBeforeNext" in rejection
           ) {
             const retryAfter = Math.ceil(
-              Number((rejection as { msBeforeNext: number }).msBeforeNext) /
-                1000,
+              Number(
+                (
+                  rejection as {
+                    msBeforeNext: number;
+                  }
+                ).msBeforeNext,
+              ) / 1000,
             );
             res.setHeader("Retry-After", String(retryAfter));
             next(
@@ -60,7 +61,6 @@ export abstract class RateLimiter {
             );
             return;
           }
-
           next(ApiError.internal("Rate limiter unavailable", rejection));
         });
     };

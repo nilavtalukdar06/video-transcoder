@@ -3,7 +3,6 @@ import { ClickHouse } from "../../clickhouse";
 import { Database } from "../../db";
 import { videos } from "../../db/schema";
 import type { LogsQuery } from "./logs.schema";
-
 export interface LogEventRecord {
   eventId: string;
   videoId: string;
@@ -12,7 +11,6 @@ export interface LogEventRecord {
   metadata: string | null;
   timestamp: string;
 }
-
 interface LogEventRow {
   event_id: string;
   video_id: string;
@@ -21,7 +19,6 @@ interface LogEventRow {
   metadata: string | null;
   ts: number;
 }
-
 export abstract class LogsRepository {
   static async videoBelongsToUser(
     videoId: string,
@@ -34,13 +31,10 @@ export abstract class LogsRepository {
       .limit(1);
     return rows.length > 0;
   }
-
   static async findByVideo(
     videoId: string,
     { jobId, limit, offset, order }: LogsQuery,
   ): Promise<LogEventRecord[]> {
-    // `timestamp` is the insert time (one value per batch), so lines inside a
-    // batch are ordered by the producer timestamp the consumer keeps in `metadata`.
     const direction = order === "desc" ? "DESC" : "ASC";
     const result = await ClickHouse.getClient().query({
       query: `
@@ -56,7 +50,6 @@ export abstract class LogsRepository {
       query_params: { videoId, jobId, limit, offset },
       format: "JSONEachRow",
     });
-
     const rows = await result.json<LogEventRow>();
     return rows.map((row) => ({
       eventId: row.event_id,

@@ -1,11 +1,9 @@
 import { Database } from "../../db";
-
 export interface DependencyStatus {
   status: "up" | "down";
   latencyMs: number;
   error?: string;
 }
-
 export interface HealthReport {
   status: "ok" | "degraded";
   uptime: number;
@@ -14,7 +12,6 @@ export interface HealthReport {
     postgres: DependencyStatus;
   };
 }
-
 export abstract class HealthService {
   private static async probe(
     fn: () => Promise<boolean>,
@@ -34,10 +31,8 @@ export abstract class HealthService {
       };
     }
   }
-
   static async check(): Promise<HealthReport> {
     const postgres = await this.probe(() => Database.ping());
-
     return {
       status: postgres.status === "up" ? "ok" : "degraded",
       uptime: Math.round(process.uptime()),
