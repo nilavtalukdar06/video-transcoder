@@ -24,6 +24,9 @@ npm-debug.log*
 # Coverage / test output
 coverage/
 
+# Architecture diagram (local reference only, not committed)
+architecture.png
+
 # OS / editor
 .DS_Store
 .idea/
