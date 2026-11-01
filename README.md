@@ -6,6 +6,7 @@ pnpm + Turborepo monorepo.
 apps/
   api/    Express + TypeScript API (see apps/api/README.md)
   worker/ Background worker (see apps/worker/README.md)
+  logs-consumer/ Kafka logs consumer (see apps/logs-consumer/README.md)
   transcoder/ ECS job: ffmpeg renditions S3 -> S3 (see apps/transcoder/README.md)
 ```
 

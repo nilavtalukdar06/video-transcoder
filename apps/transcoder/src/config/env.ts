@@ -29,7 +29,7 @@ const env = createEnv({
       .transform((value) => value === "true"),
     KAFKA_USERNAME: z.string().min(1).optional(),
     KAFKA_PASSWORD: z.string().min(1).optional(),
-    KAFKA_LOGS_TOPIC: z.string().min(1).default("transcoder-logs"),
+    KAFKA_LOGS_TOPIC: z.string().min(1).default("transcoding-logs"),
   },
   runtimeEnv: process.env,
 
