@@ -31,6 +31,10 @@ Every rendition is produced regardless of the source resolution (smaller sources
 | `SOURCE_KEY`                        | yes\*    | Key of the video to transcode; set per task via a container override       |
 | `VIDEO_ID` / `JOB_ID`               | yes\*    | UUIDs of the tracked `videos` / `transcoding_jobs` rows; set by the worker |
 | `AWS_ACCESS_KEY` / `AWS_SECRET_KEY` | no       | Local runs only. On ECS the task role is used                              |
+| `KAFKA_BROKER`                      | yes      | Kafka bootstrap broker the task logs are produced to                       |
+| `KAFKA_SSL` / `KAFKA_SASL`          | no       | Default `true`. SSL reads the CA certificate from `ca.pem` (see below)     |
+| `KAFKA_USERNAME` / `KAFKA_PASSWORD` | no       | SASL/PLAIN credentials, used when `KAFKA_SASL` is `true`                   |
+| `KAFKA_LOGS_TOPIC`                  | no       | Topic the logs are produced to (default `transcoder-logs`)                 |
 
 \* Not in `.env`: the worker provides `SOURCE_KEY`, `VIDEO_ID` and `JOB_ID` in the ECS task's runtime environment. It is optional in the env schema, but the task exits with an error if any is missing. For a local run, create a `videos` row and a `transcoding_jobs` row first and pass the values inline, e.g. `SOURCE_KEY=uploads/<userId>/<id>.mp4 VIDEO_ID=<uuid> JOB_ID=<uuid> pnpm dev`.
 
@@ -75,4 +79,5 @@ docker build -t video-transcoder-image .
 docker run --rm video-transcoder-image
 ```
 
-`.env` is copied into the image, so it must exist before building (`cp .env.example .env`).
+`.env` and `ca.pem` (the Kafka CA certificate) are copied into the image, so both must exist in this
+directory before building. `ca.pem` is git-ignored; get it from your Kafka provider.

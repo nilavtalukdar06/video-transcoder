@@ -18,6 +18,18 @@ const env = createEnv({
     JOB_ID: z.string().uuid().optional(),
     AWS_ACCESS_KEY: z.string().min(1).optional(),
     AWS_SECRET_KEY: z.string().min(1).optional(),
+    KAFKA_BROKER: z.string().min(1),
+    KAFKA_SSL: z
+      .enum(["true", "false"])
+      .default("true")
+      .transform((value) => value === "true"),
+    KAFKA_SASL: z
+      .enum(["true", "false"])
+      .default("true")
+      .transform((value) => value === "true"),
+    KAFKA_USERNAME: z.string().min(1).optional(),
+    KAFKA_PASSWORD: z.string().min(1).optional(),
+    KAFKA_LOGS_TOPIC: z.string().min(1).default("transcoder-logs"),
   },
   runtimeEnv: process.env,
 
@@ -69,6 +81,30 @@ export abstract class Env {
 
   static get AWS_SECRET_KEY(): string | undefined {
     return env.AWS_SECRET_KEY;
+  }
+
+  static get KAFKA_BROKER(): string {
+    return env.KAFKA_BROKER;
+  }
+
+  static get KAFKA_SSL(): boolean {
+    return env.KAFKA_SSL;
+  }
+
+  static get KAFKA_SASL(): boolean {
+    return env.KAFKA_SASL;
+  }
+
+  static get KAFKA_USERNAME(): string | undefined {
+    return env.KAFKA_USERNAME;
+  }
+
+  static get KAFKA_PASSWORD(): string | undefined {
+    return env.KAFKA_PASSWORD;
+  }
+
+  static get KAFKA_LOGS_TOPIC(): string {
+    return env.KAFKA_LOGS_TOPIC;
   }
 
   static validate(): void {

@@ -13,6 +13,9 @@ dist/
 .env.*
 !.env.example
 
+# Kafka CA certificate (copied into the transcoder image, never committed)
+ca.pem
+
 # Logs
 logs/
 *.log

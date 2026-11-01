@@ -1,5 +1,6 @@
 import { Env } from "./config/env";
 import { Database } from "./db";
+import { Logs } from "./lib/logs";
 import { Transcoder } from "./transcoder";
 
 async function main(): Promise<void> {
@@ -18,9 +19,11 @@ async function main(): Promise<void> {
   }
 
   await Database.connect();
+  await Logs.connect();
   try {
     await Transcoder.run(sourceKey, { videoId, jobId });
   } finally {
+    await Logs.close();
     await Database.close();
   }
   console.log("transcoding finished");

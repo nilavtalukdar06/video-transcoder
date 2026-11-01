@@ -21,6 +21,7 @@ COPY --from=build /usr/local/bin/node /usr/local/bin/node
 WORKDIR /app
 COPY --from=build /app/dist ./dist
 COPY .env ./.env
+COPY ca.pem ./ca.pem
 
 USER ubuntu
 

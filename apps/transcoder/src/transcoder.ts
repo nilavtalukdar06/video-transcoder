@@ -3,6 +3,7 @@ import { tmpdir } from "node:os";
 import { join, parse } from "node:path";
 import { Env } from "./config/env";
 import { FFmpeg, RENDITIONS } from "./lib/ffmpeg";
+import { processLogs } from "./lib/logs";
 import { S3 } from "./lib/s3";
 import { Tracking, type TrackedRun } from "./lib/tracking";
 
@@ -18,7 +19,7 @@ export abstract class Transcoder {
       await Tracking.initRenditions(tracked, RENDITIONS);
 
       const inputPath = join(workDir, "source");
-      console.log(`Downloading s3://${Env.AWS_S3_BUCKET}/${sourceKey}`);
+      await processLogs(`Downloading s3://${Env.AWS_S3_BUCKET}/${sourceKey}`);
       await S3.download(Env.AWS_S3_BUCKET, sourceKey, inputPath);
 
       const outputPrefix = this.outputPrefix(sourceKey);
@@ -30,11 +31,11 @@ export abstract class Transcoder {
         currentRendition = rendition.name;
         await Tracking.renditionProcessing(tracked, rendition.name);
 
-        console.log(`Transcoding ${rendition.name}`);
+        await processLogs(`Transcoding ${rendition.name}`);
         await FFmpeg.transcode(inputPath, outputPath, rendition);
 
         const { size } = await stat(outputPath);
-        console.log(
+        await processLogs(
           `Uploading s3://${Env.AWS_S3_TRANSFORMED_BUCKET}/${outputKey}`,
         );
         await S3.upload(
@@ -53,11 +54,17 @@ export abstract class Transcoder {
         currentRendition = null;
       }
 
-      console.log(`Deleting original s3://${Env.AWS_S3_BUCKET}/${sourceKey}`);
+      await processLogs(
+        `Deleting original s3://${Env.AWS_S3_BUCKET}/${sourceKey}`,
+      );
       await S3.delete(Env.AWS_S3_BUCKET, sourceKey);
 
       await Tracking.complete(tracked);
+      await processLogs("Transcoding completed");
     } catch (err) {
+      await processLogs(
+        `Transcoding failed: ${err instanceof Error ? err.message : String(err)}`,
+      );
       await Tracking.fail(tracked, err, currentRendition);
       throw err;
     } finally {
